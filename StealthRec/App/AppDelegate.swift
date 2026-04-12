@@ -26,8 +26,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 3. 启动触发器系统
         setupTriggers()
 
-        // 4. 注册后台任务
-        registerBackgroundTasks()
+        // 4. (已临时禁用后台刷新注册，避免因 Info.plist 被系统剥离权限而引发致命崩溃)
+        // registerBackgroundTasks()
 
         // 5. 监听定时停录通知
         NotificationCenter.default.addObserver(
