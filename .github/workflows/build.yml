@@ -47,7 +47,7 @@ jobs:
           xcodegen generate --spec project.yml
           ls -la StealthRec.xcodeproj/
 
-      # 7. 编译（不签名，完整日志输出）
+      # 7. 编译（使用 Ad-Hoc 签名，生成合法的基本 Entitlements）
       - name: 🔨 Build with xcodebuild
         run: |
           xcodebuild \
@@ -56,9 +56,9 @@ jobs:
             -configuration Release \
             -destination "generic/platform=iOS" \
             -derivedDataPath build \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_ALLOWED=YES \
             ONLY_ACTIVE_ARCH=NO \
             ARCHS="arm64" \
             VALID_ARCHS="arm64" \
@@ -79,14 +79,12 @@ jobs:
           echo "✅ 找到 App 包：$APP_PATH"
           echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
 
-      # 8. 注入 TrollStore 特权 Entitlements
-      - name: 🔑 Inject entitlements with ldid
+      # 8. 验证 Entitlements 是否正确打入二进制
+      - name: 🔑 Verify Built Entitlements
         run: |
           BINARY="${{ env.APP_PATH }}/StealthRec"
-          ENTITLEMENTS="StealthRec/App/StealthRec.entitlements"
-          ldid -S"$ENTITLEMENTS" "$BINARY"
-          echo "✅ Entitlements 注入完成"
-          ldid -e "$BINARY" | head -20 || true
+          echo "✅ 查看最终打入包内的 Entitlements:"
+          codesign -d --entitlements :- "$BINARY" || true
 
       # 9. 打包为 IPA
       - name: 📦 Package IPA

@@ -21,10 +21,10 @@ settings:
     PRODUCT_BUNDLE_IDENTIFIER: com.stealthrec.app
     SWIFT_VERSION: "5.5"
     ENABLE_BITCODE: NO
-    # 关闭代码签名（巨魔通过 ldid 签名）
-    CODE_SIGN_IDENTITY: ""
-    CODE_SIGNING_REQUIRED: NO
-    CODE_SIGNING_ALLOWED: NO
+    # 使用 Ad-Hoc 签名（让 Xcode 自动注入 TeamID 和 application-identifier）
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGNING_REQUIRED: YES
+    CODE_SIGNING_ALLOWED: YES
     IPHONEOS_DEPLOYMENT_TARGET: "15.0"
     TARGETED_DEVICE_FAMILY: "1"   # 仅 iPhone
     ONLY_ACTIVE_ARCH: NO
