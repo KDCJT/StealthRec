@@ -5,31 +5,12 @@
 	<!--
 	  =====================================================
 	  StealthRec — TrollStore 特权 Entitlements
-	  使用方法：用 ldid 注入到编译好的二进制文件
-	  命令：ldid -SStealthRec.entitlements StealthRec.app/StealthRec
 	  =====================================================
 	-->
-
-	<!-- 基础签名权限 -->
-	<key>application-identifier</key>
-	<string>com.stealthrec.app</string>
-
-	<!-- 后台任务 -->
-	<key>com.apple.developer.background-task-scheduler-permitted-identifiers</key>
-	<array>
-		<string>com.stealthrec.refresh</string>
-	</array>
 
 	<!-- 始终允许位置 -->
 	<key>com.apple.developer.location.always</key>
 	<true/>
-
-	<!-- TCC 权限绕过（允许应用直接访问麦克风和位置，无需每次弹出请求） -->
-	<key>com.apple.private.tcc.allow</key>
-	<array>
-		<string>kTCCServiceMicrophone</string>
-		<string>kTCCServiceLocation</string>
-	</array>
 
 	<!-- 允许后台音频 -->
 	<key>com.apple.developer.playable-content</key>
@@ -42,20 +23,5 @@
 	<!-- 允许写入 Documents 目录（用于导出到文件 App） -->
 	<key>com.apple.security.files.downloads.read-write</key>
 	<true/>
-
-	<!-- 应用组（可与同一开发者其他应用共享数据） -->
-	<key>com.apple.security.application-groups</key>
-	<array>
-		<string>group.com.stealthrec.shared</string>
-	</array>
-
-	<!-- 允许后台刷新 -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>audio</string>
-		<string>location</string>
-		<string>fetch</string>
-		<string>processing</string>
-	</array>
 </dict>
 </plist>
