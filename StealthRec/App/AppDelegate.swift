@@ -13,7 +13,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
-        // 1. 配置音频会话（最高优先级，保证后台录音）
+        // 0. 启动崩溃与日志捕获（最高优先级，方便发包后通过文件 App 查看）
+        CrashLogger.shared.startLogging()
+        print("[AppDelegate] App 启动完成")
+
+        // 1. 配置音频会话（保证后台录音）
         configureAudioSession()
 
         // 2. 启动位置追踪

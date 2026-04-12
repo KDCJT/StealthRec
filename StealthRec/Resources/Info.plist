@@ -98,9 +98,9 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 
-	<!-- 不允许 iTunes 文件共享（仅通过 App 内导出） -->
+	<!-- 允许 iTunes 文件共享/文件App读取（方便提取日志） -->
 	<key>UIFileSharingEnabled</key>
-	<false/>
+	<true/>
 
 	<!-- 允许在「文件」App 中看到 Documents（导出时可见） -->
 	<key>LSSupportsOpeningDocumentsInPlace</key>
