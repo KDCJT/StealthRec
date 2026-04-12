@@ -1,0 +1,155 @@
+name: 🎙️ Build StealthRec IPA
+
+on:
+  # 推送到 main 分支自动构建
+  push:
+    branches: [ main, master ]
+  # 手动触发（推荐方式）
+  workflow_dispatch:
+    inputs:
+      release_note:
+        description: '版本备注（可选）'
+        required: false
+        default: '最新构建'
+
+jobs:
+  build:
+    name: Build on macOS
+    runs-on: macos-14       # Apple Silicon runner，速度最快
+    timeout-minutes: 30
+
+    steps:
+      # ─────────────────────────────────────────────────
+      # 1. 检出代码
+      # ─────────────────────────────────────────────────
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────────────────────────
+      # 2. 选择 Xcode 版本（iOS 15 需要 Xcode 14+）
+      # ─────────────────────────────────────────────────
+      - name: 🛠️ Select Xcode 15.4
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '15.4'
+
+      # ─────────────────────────────────────────────────
+      # 3. 安装工具
+      # ─────────────────────────────────────────────────
+      - name: 📦 Install XcodeGen
+        run: |
+          brew install xcodegen
+          xcodegen --version
+
+      - name: 📦 Install ldid（用于注入 TrollStore Entitlements）
+        run: |
+          brew install ldid
+          ldid --version || true
+
+      # ─────────────────────────────────────────────────
+      # 4. 生成 Xcode 项目（从 project.yml）
+      # ─────────────────────────────────────────────────
+      - name: 📋 Generate Xcode project via XcodeGen
+        run: |
+          xcodegen generate --spec project.yml
+          ls -la StealthRec.xcodeproj/
+
+      # ─────────────────────────────────────────────────
+      # 5. 编译（不签名，由后续 ldid 注入）
+      # ─────────────────────────────────────────────────
+      - name: 🔨 Build with xcodebuild
+        run: |
+          xcodebuild \
+            -project StealthRec.xcodeproj \
+            -scheme StealthRec \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            ARCHS="arm64" \
+            VALID_ARCHS="arm64" \
+            | xcpretty --color || true
+          
+          # 验证编译结果
+          APP_PATH=$(find build -name "*.app" -type d | grep -v ".dSYM" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ 编译失败：找不到 .app 包"
+            exit 1
+          fi
+          echo "✅ 找到 App 包：$APP_PATH"
+          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+
+      # ─────────────────────────────────────────────────
+      # 6. 注入 TrollStore 特权 Entitlements
+      # ─────────────────────────────────────────────────
+      - name: 🔑 Inject entitlements with ldid
+        run: |
+          echo "📍 App 路径：${{ env.APP_PATH }}"
+          BINARY="$APP_PATH/StealthRec"
+          ENTITLEMENTS="StealthRec/App/StealthRec.entitlements"
+          
+          echo "注入前的签名信息："
+          codesign -d --entitlements - "$BINARY" 2>/dev/null || echo "(无签名)"
+          
+          ldid -S"$ENTITLEMENTS" "$BINARY"
+          echo "✅ Entitlements 注入完成"
+          
+          echo "注入后验证："
+          ldid -e "$BINARY" | head -30 || true
+
+      # ─────────────────────────────────────────────────
+      # 7. 打包为 IPA
+      # ─────────────────────────────────────────────────
+      - name: 📦 Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r "${{ env.APP_PATH }}" Payload/
+          
+          zip -r StealthRec.ipa Payload/ -x "*.DS_Store" -x "__MACOSX/*"
+          rm -rf Payload/
+          
+          # 显示 IPA 文件信息
+          ls -lh StealthRec.ipa
+          echo "✅ IPA 打包完成：$(du -sh StealthRec.ipa | cut -f1)"
+
+      # ─────────────────────────────────────────────────
+      # 8. 上传 IPA 为 Artifact（7天有效期）
+      # ─────────────────────────────────────────────────
+      - name: ⬆️ Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StealthRec-${{ github.run_number }}-IPA
+          path: StealthRec.ipa
+          retention-days: 7
+          if-no-files-found: error
+
+      # ─────────────────────────────────────────────────
+      # 9. 构建完成报告
+      # ─────────────────────────────────────────────────
+      - name: 📊 Build Summary
+        if: always()
+        run: |
+          echo ""
+          echo "╔═══════════════════════════════════════╗"
+          echo "║       StealthRec 构建报告              ║"
+          echo "╚═══════════════════════════════════════╝"
+          echo ""
+          echo "分支：${{ github.ref_name }}"
+          echo "提交：${{ github.sha }}"
+          echo "构建编号：#${{ github.run_number }}"
+          echo ""
+          if [ -f StealthRec.ipa ]; then
+            echo "✅ 构建成功！"
+            echo "📱 IPA 大小：$(du -sh StealthRec.ipa | cut -f1)"
+            echo ""
+            echo "安装步骤："
+            echo "1. 在 GitHub Actions 页面下载 StealthRec.ipa"
+            echo "2. 通过 AirDrop 传输到 iPhone 7"
+            echo "3. 用巨魔商店（TrollStore）打开并安装"
+            echo "4. 首次打开授予麦克风和位置权限"
+          else
+            echo "❌ 构建失败！查看上方日志排查错误"
+          fi

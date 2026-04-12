@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- App 基本信息 -->
+	<key>CFBundleDisplayName</key>
+	<string>StealthRec</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.stealthrec.app</string>
+	<key>CFBundleName</key>
+	<string>StealthRec</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+
+	<!-- iOS 最低版本 -->
+	<key>MinimumOSVersion</key>
+	<string>15.0</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+
+	<!-- 支持设备方向 -->
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+
+	<!-- Scene 配置 -->
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+
+	<!-- =====================================
+	     后台运行模式 (关键！)
+	     ===================================== -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<!-- 后台录音 -->
+		<string>audio</string>
+		<!-- 后台位置更新 -->
+		<string>location</string>
+		<!-- 后台任务刷新 -->
+		<string>fetch</string>
+		<!-- 后台处理 -->
+		<string>processing</string>
+	</array>
+
+	<!-- 后台任务标识符 -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.stealthrec.refresh</string>
+	</array>
+
+	<!-- =====================================
+	     隐私权限声明
+	     ===================================== -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>需要麦克风权限以进行录音</string>
+
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>需要位置权限以记录录音地点</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>需要位置权限以在后台记录录音地点</string>
+
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>需要始终允许位置权限以在后台记录录音地点</string>
+
+	<key>NSFaceIDUsageDescription</key>
+	<string>使用 Face ID 快速解锁录音管理界面</string>
+
+	<!-- =====================================
+	     UI 外观（状态栏样式）
+	     ===================================== -->
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleLightContent</string>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+
+	<!-- 不允许 iTunes 文件共享（仅通过 App 内导出） -->
+	<key>UIFileSharingEnabled</key>
+	<false/>
+
+	<!-- 允许在「文件」App 中看到 Documents（导出时可见） -->
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+
+	<!-- 启动屏 -->
+	<key>UILaunchScreen</key>
+	<dict/>
+</dict>
+</plist>

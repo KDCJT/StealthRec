@@ -1,0 +1,84 @@
+# project.yml — XcodeGen 项目生成配置
+# 使用方法：xcodegen generate
+# 无需手动维护 .xcodeproj 文件
+
+name: StealthRec
+
+options:
+  bundleIdPrefix: com.stealthrec
+  deploymentTarget:
+    iOS: "15.0"
+  minimumXcodeVersion: "14.0"
+  xcodeVersion: "15"
+  generateEmptyDirectories: true
+  defaultConfig: Release
+
+configs:
+  Debug: debug
+  Release: release
+
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.stealthrec.app
+    SWIFT_VERSION: "5.5"
+    ENABLE_BITCODE: NO
+    # 关闭代码签名（巨魔通过 ldid 签名）
+    CODE_SIGN_IDENTITY: ""
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGNING_ALLOWED: NO
+    IPHONEOS_DEPLOYMENT_TARGET: "15.0"
+    TARGETED_DEVICE_FAMILY: "1"   # 仅 iPhone
+    ONLY_ACTIVE_ARCH: NO
+    VALID_ARCHS: "arm64"
+    ARCHS: "arm64"
+    # 关闭 Bitcode
+    ENABLE_TESTABILITY: NO
+    SWIFT_OPTIMIZATION_LEVEL: "-O"
+    GCC_OPTIMIZATION_LEVEL: "s"
+  configs:
+    Debug:
+      SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+      DEBUG_INFORMATION_FORMAT: dwarf
+
+targets:
+  StealthRec:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    
+    # 源文件目录
+    sources:
+      - path: StealthRec
+        excludes:
+          - "**/*.md"
+          - "**/*.sh"
+    
+    # Info.plist 位置
+    info:
+      path: StealthRec/Resources/Info.plist
+    
+    # Entitlements
+    entitlements:
+      path: StealthRec/App/StealthRec.entitlements
+    
+    # 系统框架依赖
+    dependencies:
+      - framework: CoreMotion.framework
+        embed: false
+      - framework: AVFoundation.framework
+        embed: false
+      - framework: CoreLocation.framework
+        embed: false
+      - framework: LocalAuthentication.framework
+        embed: false
+      - framework: MapKit.framework
+        embed: false
+      - framework: BackgroundTasks.framework
+        embed: false
+      - framework: CryptoKit.framework
+        embed: false
+
+    settings:
+      base:
+        INFOPLIST_FILE: StealthRec/Resources/Info.plist
+        PRODUCT_NAME: StealthRec
