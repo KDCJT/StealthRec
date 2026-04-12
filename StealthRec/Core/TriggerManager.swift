@@ -7,7 +7,7 @@ import CoreMotion
 import UIKit
 
 // MARK: - 触发管理器
-final class TriggerManager {
+final class TriggerManager: NSObject {
 
     static let shared = TriggerManager()
 
@@ -24,7 +24,7 @@ final class TriggerManager {
     private var shakeDebounceTimer: Timer?
     private var isShakeCoolingDown = false
 
-    private init() {}
+    private override init() { super.init() }
 
     // MARK: - 启动所有启用的触发器
     func startAll(settings: AppSettings) {
