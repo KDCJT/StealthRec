@@ -9,7 +9,6 @@ options:
   deploymentTarget:
     iOS: "15.0"
   minimumXcodeVersion: "14.0"
-  xcodeVersion: "15"
   generateEmptyDirectories: true
   defaultConfig: Release
 
