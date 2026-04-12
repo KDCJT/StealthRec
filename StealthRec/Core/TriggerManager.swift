@@ -131,14 +131,10 @@ final class TriggerManager: NSObject {
         if abs(newVal - oldVal) > 0.01 {
             volumeTapTimes.append(Date())
 
-            // 静默恢复到中间音量，避免影响实际音量
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                let setter = NSSelectorFromString("setVolume:animated:")
-                UIApplication.shared.perform(setter, with: 0.5, with: false)
-            }
-
-            // 清理 1 秒前的记录
+            // 记录当前时间
             let now = Date()
+            
+            // 清理 1 秒前的记录
             volumeTapTimes = volumeTapTimes.filter { now.timeIntervalSince($0) < 1.0 }
 
             // 检测是否达到连按次数
