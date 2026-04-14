@@ -4,15 +4,15 @@
 <dict>
 	<!-- App 基本信息 -->
 	<key>CFBundleDisplayName</key>
-	<string>StealthRec</string>
+	<string>GhostRec</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.stealthrec.app</string>
+	<string>com.ghostrec.app</string>
 	<key>CFBundleName</key>
-	<string>StealthRec</string>
+	<string>GhostRec</string>
 	<key>CFBundleVersion</key>
-	<string>4</string>
+	<string>5</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.3</string>
+	<string>1.1.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleExecutable</key>
