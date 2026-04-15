@@ -237,18 +237,19 @@ private class FloatButtonViewController: UIViewController {
         button = UIButton(type: .custom)
         button.frame = view.bounds
         button.layer.cornerRadius = view.bounds.width / 2
-        button.backgroundColor = UIColor(red: 0.9, green: 0.15, blue: 0.15, alpha: 0.85)
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOpacity = 0.4
-        button.layer.shadowRadius = 4
-        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.backgroundColor = UIColor.black.withAlphaComponent(0.1) // 降低透明度使其更隐蔽
+        button.layer.shadowOpacity = 0.0
 
-        let micImage = UIImage(systemName: "mic.fill")
+        let micImage = UIImage(systemName: "mic.fill")?.withRenderingMode(.alwaysTemplate)
         button.setImage(micImage, for: .normal)
-        button.tintColor = .white
+        button.tintColor = UIColor.white.withAlphaComponent(0.3) // 隐蔽的图标
         button.imageView?.contentMode = .scaleAspectFit
 
-        button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
+        // 双击手势（满足双击屏幕某区域要求）
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(buttonDoubleTapped))
+        doubleTap.numberOfTapsRequired = 2
+        button.addGestureRecognizer(doubleTap)
+        
         view.addSubview(button)
 
         // 拖拽手势
@@ -256,11 +257,11 @@ private class FloatButtonViewController: UIViewController {
         button.addGestureRecognizer(panGesture)
     }
 
-    @objc private func buttonTapped() {
+    @objc private func buttonDoubleTapped() {
         guard !isDragging else { return }
 
         // 触感反馈
-        let feedback = UIImpactFeedbackGenerator(style: .medium)
+        let feedback = UIImpactFeedbackGenerator(style: .heavy)
         feedback.impactOccurred()
 
         // 短暂动画
@@ -313,10 +314,11 @@ private class FloatButtonViewController: UIViewController {
     func updateState(isRecording: Bool) {
         DispatchQueue.main.async {
             let imageName = isRecording ? "stop.fill" : "mic.fill"
-            self.button.setImage(UIImage(systemName: imageName), for: .normal)
-            self.button.backgroundColor = isRecording
-                ? UIColor(red: 0.2, green: 0.7, blue: 0.3, alpha: 0.85)
-                : UIColor(red: 0.9, green: 0.15, blue: 0.15, alpha: 0.85)
+            self.button.setImage(UIImage(systemName: imageName)?.withRenderingMode(.alwaysTemplate), for: .normal)
+            self.button.backgroundColor = UIColor.black.withAlphaComponent(0.1)
+            self.button.tintColor = isRecording 
+                ? UIColor.red.withAlphaComponent(0.3)
+                : UIColor.white.withAlphaComponent(0.3)
 
             if isRecording {
                 // 脉冲动画
