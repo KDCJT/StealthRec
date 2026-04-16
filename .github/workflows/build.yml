@@ -2,7 +2,10 @@ name: 🎙️ Build StealthRec IPA
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - master
+      - main
+      - debug-minimal
   workflow_dispatch:
     inputs:
       release_note:
@@ -21,48 +24,53 @@ jobs:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 显示 Xcode 版本（使用 Runner 自带，macos-14 默认含 Xcode 15.x）
-      - name: 🛠️ Show Xcode version
+      # 2. 显示环境信息
+      - name: 🛠️ Show environment info
+        shell: bash
         run: |
           xcodebuild -version
           swift --version
+          echo "Branch: $GITHUB_REF_NAME"
 
-      # 3. 安装 xcpretty（美化编译输出）
-      - name: 💎 Install xcpretty
-        run: gem install xcpretty --no-document
-
-      # 4. 安装 XcodeGen（从 project.yml 生成 xcodeproj）
+      # 3. 安装 XcodeGen
       - name: 📦 Install XcodeGen
+        shell: bash
         run: |
           brew install xcodegen
           xcodegen --version
 
-      # 5. 安装 ldid（注入 TrollStore 特权 entitlements）
+      # 4. 安装 ldid
       - name: 📦 Install ldid
+        shell: bash
         run: brew install ldid
 
-      # 6. 验证 Info.plist 版本（防止版本号没被正确注入）
-      - name: 🔍 Verify project.yml and plist
+      # 5. 显示 project.yml 版本配置
+      - name: 🔍 Show version config
+        shell: bash
         run: |
-          echo "=== project.yml MARKETING_VERSION ==="
+          echo "=== project.yml version settings ==="
           grep -E 'MARKETING_VERSION|CURRENT_PROJECT_VERSION' project.yml
-          echo "=== Info.plist CFBundleVersion ==="
+          echo "=== Info.plist ==="
           cat StealthRec/Resources/Info.plist
 
-      # 7. 生成 Xcode 项目
+      # 6. 生成 Xcode 项目
       - name: 📋 Generate Xcode project
+        shell: bash
         run: |
           xcodegen generate --spec project.yml
+          echo "=== Generated xcodeproj ==="
           ls -la StealthRec.xcodeproj/
 
-      # 7. 编译（不签名，完整日志输出）
+      # 7. 编译（直接输出，不用 xcpretty，确保错误可见）
       - name: 🔨 Build with xcodebuild
+        shell: bash
         run: |
-          # 从 project.yml 读取版本号，确保构建时正确注入
+          # 从 project.yml 读取版本号
           MARKETING_VER=$(grep 'MARKETING_VERSION:' project.yml | head -1 | sed 's/.*"\(.*\)".*/\1/')
           BUILD_NUM=$(grep 'CURRENT_PROJECT_VERSION:' project.yml | head -1 | sed 's/.*"\(.*\)".*/\1/')
-          echo ">>> Building version: $MARKETING_VER ($BUILD_NUM)"
+          echo ">>> Building GhostRec v${MARKETING_VER} (Build ${BUILD_NUM})"
 
+          # 编译，直接输出日志（不通过 xcpretty 以防掩盖错误）
           xcodebuild \
             -project StealthRec.xcodeproj \
             -scheme StealthRec \
@@ -75,53 +83,60 @@ jobs:
             ONLY_ACTIVE_ARCH=NO \
             ARCHS="arm64" \
             VALID_ARCHS="arm64" \
-            MARKETING_VERSION="$MARKETING_VER" \
-            CURRENT_PROJECT_VERSION="$BUILD_NUM" \
-            2>&1 | tee build.log | xcpretty --color; EXIT=${PIPESTATUS[0]}
-
-          if [ $EXIT -ne 0 ]; then
-            echo "❌ 编译失败 (exit $EXIT)，显示最后 100 行日志："
-            tail -100 build.log
-            exit $EXIT
-          fi
+            MARKETING_VERSION="${MARKETING_VER}" \
+            CURRENT_PROJECT_VERSION="${BUILD_NUM}"
 
           # 验证编译结果
+          echo "=== Looking for .app bundle ==="
+          find build -name "*.app" -type d | grep -v ".dSYM"
           APP_PATH=$(find build -name "*.app" -type d | grep -v ".dSYM" | head -n 1)
           if [ -z "$APP_PATH" ]; then
-            echo "❌ 找不到 .app 包"
+            echo "❌ 找不到 .app 包，编译失败"
             exit 1
           fi
           echo "✅ 找到 App 包：$APP_PATH"
-          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+          echo "APP_PATH=$APP_PATH" >> "$GITHUB_ENV"
 
-          # 验证打包后的 Info.plist 版本
-          echo "=== Built Info.plist Contents ==="
-          cat "$APP_PATH/Info.plist" || plutil -p "$APP_PATH/Info.plist" || true
-          echo "=== CFBundleShortVersionString ==="
+          # 检查二进制文件大小
+          BINARY="$APP_PATH/StealthRec"
+          if [ ! -f "$BINARY" ]; then
+            echo "❌ 二进制文件不存在"
+            exit 1
+          fi
+          echo "✅ 二进制大小: $(du -sh "$BINARY" | cut -f1)"
+
+          # 验证 Info.plist 版本注入
+          echo "=== Built Info.plist version ==="
           /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP_PATH/Info.plist"
-          echo "=== CFBundleVersion ==="
           /usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$APP_PATH/Info.plist"
 
       # 8. 注入 TrollStore 特权 Entitlements
       - name: 🔑 Inject entitlements with ldid
+        shell: bash
         run: |
           BINARY="${{ env.APP_PATH }}/StealthRec"
           ENTITLEMENTS="StealthRec/App/StealthRec.entitlements"
+          echo "=== Entitlements file ==="
+          cat "$ENTITLEMENTS"
           ldid -S"$ENTITLEMENTS" "$BINARY"
           echo "✅ Entitlements 注入完成"
-          ldid -e "$BINARY" | head -20 || true
+          echo "=== Injected entitlements ==="
+          ldid -e "$BINARY" || true
 
       # 9. 打包为 IPA
       - name: 📦 Package IPA
+        shell: bash
         run: |
           mkdir -p Payload
           cp -r "${{ env.APP_PATH }}" Payload/
           zip -r StealthRec.ipa Payload/ -x "*.DS_Store" -x "__MACOSX/*"
           rm -rf Payload/
+          echo "✅ IPA 打包完成"
+          echo "=== IPA size ==="
+          du -sh StealthRec.ipa
           ls -lh StealthRec.ipa
-          echo "✅ IPA 打包完成：$(du -sh StealthRec.ipa | cut -f1)"
 
-      # 10. 上传 IPA（保存 7 天）
+      # 10. 上传 IPA
       - name: ⬆️ Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -133,18 +148,14 @@ jobs:
       # 11. 构建摘要
       - name: 📊 Build Summary
         if: always()
+        shell: bash
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "  StealthRec 构建报告  #${{ github.run_number }}"
+          echo "  GhostRec 构建报告  #${{ github.run_number }}"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           if [ -f StealthRec.ipa ]; then
             echo "状态: ✅ 成功"
             echo "大小: $(du -sh StealthRec.ipa | cut -f1)"
-            echo ""
-            echo "安装步骤:"
-            echo "1. Actions 页面 → Artifacts 下载 IPA"
-            echo "2. AirDrop 传到 iPhone 7"
-            echo "3. 巨魔商店打开安装"
           else
             echo "状态: ❌ 失败，查看上方日志"
           fi
