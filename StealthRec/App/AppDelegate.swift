@@ -1,5 +1,7 @@
 // AppDelegate.swift
 // StealthRec — 应用程序入口与生命周期管理
+// 使用传统 AppDelegate+UIWindow 方式（不使用 Scene-based lifecycle）
+// 这是巨魔侧载 App 的正确方式，避免 SceneDelegate 与 AMFI 的冲突
 
 import UIKit
 import AVFoundation
@@ -7,6 +9,8 @@ import BackgroundTasks
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
 
     func application(
         _ application: UIApplication,
@@ -17,38 +21,85 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         CrashLogger.shared.startLogging()
         CrashLogger.log("[AppDelegate] Step 0: CrashLogger started")
 
-        // 步骤1: 配置音频会话
-        CrashLogger.log("[AppDelegate] Step 1: Configuring audio session...")
+        // 步骤1: 创建主窗口（传统 UIWindow 方式，不依赖 Scene）
+        CrashLogger.log("[AppDelegate] Step 1: Creating UIWindow...")
+        setupWindow()
+        CrashLogger.log("[AppDelegate] Step 1: UIWindow created")
+
+        // 步骤2: 配置音频会话
+        CrashLogger.log("[AppDelegate] Step 2: Configuring audio session...")
         configureAudioSession()
-        CrashLogger.log("[AppDelegate] Step 1: Audio session configured")
+        CrashLogger.log("[AppDelegate] Step 2: Audio session configured")
 
-        // 步骤2: 启动位置追踪
-        CrashLogger.log("[AppDelegate] Step 2: Starting location tracking...")
+        // 步骤3: 启动位置追踪
+        CrashLogger.log("[AppDelegate] Step 3: Starting location tracking...")
         LocationManager.shared.startTracking()
-        CrashLogger.log("[AppDelegate] Step 2: Location tracking started")
+        CrashLogger.log("[AppDelegate] Step 3: Location tracking started")
 
-        // 步骤3: 启动触发器系统
-        CrashLogger.log("[AppDelegate] Step 3: Setting up triggers...")
+        // 步骤4: 启动触发器系统
+        CrashLogger.log("[AppDelegate] Step 4: Setting up triggers...")
         setupTriggers()
-        CrashLogger.log("[AppDelegate] Step 3: Triggers configured")
+        CrashLogger.log("[AppDelegate] Step 4: Triggers configured")
 
-        // 步骤4: 监听定时停录通知
-        CrashLogger.log("[AppDelegate] Step 4: Registering observers...")
+        // 步骤5: 监听定时停录通知
+        CrashLogger.log("[AppDelegate] Step 5: Registering observers...")
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleTimerStop),
             name: .timerRecordingStop,
             object: nil
         )
-        CrashLogger.log("[AppDelegate] Step 4: Observers registered")
+        CrashLogger.log("[AppDelegate] Step 5: Observers registered")
 
-        // 步骤5: 设置录音引擎委托
-        CrashLogger.log("[AppDelegate] Step 5: Setting recording engine delegate...")
+        // 步骤6: 设置录音引擎委托
+        CrashLogger.log("[AppDelegate] Step 6: Setting recording engine delegate...")
         RecordingEngine.shared.delegate = self
-        CrashLogger.log("[AppDelegate] Step 5: Done")
+        CrashLogger.log("[AppDelegate] Step 6: Done")
 
         CrashLogger.log("[AppDelegate] *** App launch COMPLETE ***")
         return true
+    }
+
+    // MARK: - 主窗口创建（传统方式）
+    private func setupWindow() {
+        let settings = SettingsManager.shared.settings
+
+        let mainVC = MainViewController()
+        let nav = UINavigationController(rootViewController: mainVC)
+        nav.navigationBar.prefersLargeTitles = true
+        applyDarkTheme(to: nav)
+
+        window = UIWindow(frame: UIScreen.main.bounds)
+
+        if settings.passwordEnabled {
+            let authVC = AuthViewController()
+            authVC.onAuthenticated = { [weak self] in
+                self?.window?.rootViewController = nav
+            }
+            window?.rootViewController = authVC
+        } else {
+            window?.rootViewController = nav
+        }
+
+        window?.makeKeyAndVisible()
+    }
+
+    private func applyDarkTheme(to nav: UINavigationController) {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(hex: "#0D0D0F")
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.white,
+            .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
+        ]
+        appearance.largeTitleTextAttributes = [
+            .foregroundColor: UIColor.white,
+            .font: UIFont.systemFont(ofSize: 34, weight: .bold)
+        ]
+        nav.navigationBar.standardAppearance = appearance
+        nav.navigationBar.scrollEdgeAppearance = appearance
+        nav.navigationBar.compactAppearance = appearance
+        nav.navigationBar.tintColor = UIColor(hex: "#FF3B30")
     }
 
     // MARK: - 音频会话配置
@@ -62,7 +113,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             )
             try session.setActive(true)
         } catch {
-            print("[AppDelegate] 音频会话配置失败: \(error)")
+            CrashLogger.log("[AppDelegate] 音频会话配置失败: \(error)")
         }
     }
 
@@ -91,7 +142,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    // MARK: - 后台任务注册
+    // MARK: - 后台任务注册（按需开启）
     private func registerBackgroundTasks() {
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: "com.ghostrec.refresh",
@@ -105,13 +156,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         task.expirationHandler = {
             task.setTaskCompleted(success: false)
         }
-
-        // 如果正在录音，确保音频会话活跃
         if RecordingEngine.shared.isRecording {
             try? AVAudioSession.sharedInstance().setActive(true)
         }
-
-        // 重新调度下一次后台刷新
         scheduleBackgroundRefresh()
         task.setTaskCompleted(success: true)
     }
@@ -122,32 +169,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         try? BGTaskScheduler.shared.submit(request)
     }
 
-    // MARK: - UISceneSession Lifecycle
-    func application(
-        _ application: UIApplication,
-        configurationForConnecting connectingSceneSession: UISceneSession,
-        options: UIScene.ConnectionOptions
-    ) -> UISceneConfiguration {
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
-    }
-
     // MARK: - 进入后台
     func applicationDidEnterBackground(_ application: UIApplication) {
         scheduleBackgroundRefresh()
-
-        // 如果正在录音，保持音频会话活跃
         if RecordingEngine.shared.isRecording {
-            do {
-                try AVAudioSession.sharedInstance().setActive(true)
-            } catch {
-                print("[AppDelegate] 后台音频会话激活失败: \(error)")
-            }
+            try? AVAudioSession.sharedInstance().setActive(true)
         }
     }
 
     // MARK: - 重新进入前台
     func applicationWillEnterForeground(_ application: UIApplication) {
-        // 重新激活触发器
         setupTriggers()
     }
 }
@@ -156,41 +187,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: RecordingEngineDelegate {
 
     func recordingDidStart(metadata: RecordingMetadata) {
-        print("[AppDelegate] 录音开始: \(metadata.filename)")
-
-        // 更新位置信息
+        CrashLogger.log("[AppDelegate] 录音开始: \(metadata.filename)")
         LocationManager.shared.captureCurrentLocation { location in
             guard let location = location else { return }
             RecordingEngine.shared.updateCurrentLocation(location)
         }
-
-        // 触发触感反馈（让用户知道录音已开始）
         DispatchQueue.main.async {
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.success)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
         }
     }
 
     func recordingDidStop(metadata: RecordingMetadata) {
-        print("[AppDelegate] 录音结束: \(metadata.filename), 时长: \(metadata.formattedDuration)")
-
+        CrashLogger.log("[AppDelegate] 录音结束: \(metadata.filename)")
         DispatchQueue.main.async {
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.warning)
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
         }
     }
 
     func recordingDidFail(error: Error) {
-        print("[AppDelegate] 录音失败: \(error.localizedDescription)")
-
+        CrashLogger.log("[AppDelegate] 录音失败: \(error.localizedDescription)")
         DispatchQueue.main.async {
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.error)
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
     }
 
     func recordingLevelDidUpdate(_ level: Float) {
-        // 发送到 UI 层
         NotificationCenter.default.post(
             name: .recordingLevelUpdated,
             object: nil,

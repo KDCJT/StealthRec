@@ -58,6 +58,11 @@ jobs:
       # 7. 编译（不签名，完整日志输出）
       - name: 🔨 Build with xcodebuild
         run: |
+          # 从 project.yml 读取版本号，确保构建时正确注入
+          MARKETING_VER=$(grep 'MARKETING_VERSION:' project.yml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          BUILD_NUM=$(grep 'CURRENT_PROJECT_VERSION:' project.yml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          echo ">>> Building version: $MARKETING_VER ($BUILD_NUM)"
+
           xcodebuild \
             -project StealthRec.xcodeproj \
             -scheme StealthRec \
@@ -70,6 +75,8 @@ jobs:
             ONLY_ACTIVE_ARCH=NO \
             ARCHS="arm64" \
             VALID_ARCHS="arm64" \
+            MARKETING_VERSION="$MARKETING_VER" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUM" \
             2>&1 | tee build.log | xcpretty --color; EXIT=${PIPESTATUS[0]}
 
           if [ $EXIT -ne 0 ]; then
