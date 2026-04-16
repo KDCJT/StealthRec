@@ -2,7 +2,10 @@ name: 🎙️ Build StealthRec IPA
 
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - master
+      - main
+      - debug-minimal
   workflow_dispatch:
     inputs:
       release_note:

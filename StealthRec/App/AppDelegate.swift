@@ -5,7 +5,6 @@ import UIKit
 import AVFoundation
 import BackgroundTasks
 
-@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(
