@@ -13,33 +13,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
-        // 0. 启动崩溃与日志捕获（最高优先级，方便发包后通过文件 App 查看）
+        // 步骤0: 启动日志系统（必须最早执行）
         CrashLogger.shared.startLogging()
-        print("[AppDelegate] App 启动完成")
+        CrashLogger.log("[AppDelegate] Step 0: CrashLogger started")
 
-        // 1. 配置音频会话（保证后台录音）
+        // 步骤1: 配置音频会话
+        CrashLogger.log("[AppDelegate] Step 1: Configuring audio session...")
         configureAudioSession()
+        CrashLogger.log("[AppDelegate] Step 1: Audio session configured")
 
-        // 2. 启动位置追踪
+        // 步骤2: 启动位置追踪
+        CrashLogger.log("[AppDelegate] Step 2: Starting location tracking...")
         LocationManager.shared.startTracking()
+        CrashLogger.log("[AppDelegate] Step 2: Location tracking started")
 
-        // 3. 启动触发器系统
+        // 步骤3: 启动触发器系统
+        CrashLogger.log("[AppDelegate] Step 3: Setting up triggers...")
         setupTriggers()
+        CrashLogger.log("[AppDelegate] Step 3: Triggers configured")
 
-        // 4. (已临时禁用后台刷新注册，避免因 Info.plist 被系统剥离权限而引发致命崩溃)
-        // registerBackgroundTasks()
-
-        // 5. 监听定时停录通知
+        // 步骤4: 监听定时停录通知
+        CrashLogger.log("[AppDelegate] Step 4: Registering observers...")
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleTimerStop),
             name: .timerRecordingStop,
             object: nil
         )
+        CrashLogger.log("[AppDelegate] Step 4: Observers registered")
 
-        // 6. 设置录音引擎委托
+        // 步骤5: 设置录音引擎委托
+        CrashLogger.log("[AppDelegate] Step 5: Setting recording engine delegate...")
         RecordingEngine.shared.delegate = self
+        CrashLogger.log("[AppDelegate] Step 5: Done")
 
+        CrashLogger.log("[AppDelegate] *** App launch COMPLETE ***")
         return true
     }
 
@@ -86,7 +94,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - 后台任务注册
     private func registerBackgroundTasks() {
         BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: "com.stealthrec.refresh",
+            forTaskWithIdentifier: "com.ghostrec.refresh",
             using: nil
         ) { task in
             self.handleBackgroundRefresh(task: task as! BGAppRefreshTask)
@@ -109,7 +117,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     private func scheduleBackgroundRefresh() {
-        let request = BGAppRefreshTaskRequest(identifier: "com.stealthrec.refresh")
+        let request = BGAppRefreshTaskRequest(identifier: "com.ghostrec.refresh")
         request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60)
         try? BGTaskScheduler.shared.submit(request)
     }

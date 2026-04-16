@@ -41,7 +41,15 @@ jobs:
       - name: 📦 Install ldid
         run: brew install ldid
 
-      # 6. 生成 Xcode 项目
+      # 6. 验证 Info.plist 版本（防止版本号没被正确注入）
+      - name: 🔍 Verify project.yml and plist
+        run: |
+          echo "=== project.yml MARKETING_VERSION ==="
+          grep -E 'MARKETING_VERSION|CURRENT_PROJECT_VERSION' project.yml
+          echo "=== Info.plist CFBundleVersion ==="
+          cat StealthRec/Resources/Info.plist
+
+      # 7. 生成 Xcode 项目
       - name: 📋 Generate Xcode project
         run: |
           xcodegen generate --spec project.yml
@@ -78,6 +86,14 @@ jobs:
           fi
           echo "✅ 找到 App 包：$APP_PATH"
           echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+
+          # 验证打包后的 Info.plist 版本
+          echo "=== Built Info.plist Contents ==="
+          cat "$APP_PATH/Info.plist" || plutil -p "$APP_PATH/Info.plist" || true
+          echo "=== CFBundleShortVersionString ==="
+          /usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP_PATH/Info.plist"
+          echo "=== CFBundleVersion ==="
+          /usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$APP_PATH/Info.plist"
 
       # 8. 注入 TrollStore 特权 Entitlements
       - name: 🔑 Inject entitlements with ldid
