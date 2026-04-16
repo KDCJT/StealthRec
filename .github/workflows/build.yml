@@ -82,9 +82,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             ONLY_ACTIVE_ARCH=NO \
             ARCHS="arm64" \
-            VALID_ARCHS="arm64" \
-            MARKETING_VERSION="${MARKETING_VER}" \
-            CURRENT_PROJECT_VERSION="${BUILD_NUM}"
+            VALID_ARCHS="arm64"
 
           # 验证编译结果
           echo "=== Looking for .app bundle ==="
