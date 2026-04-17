@@ -16,8 +16,12 @@ final class TriggerManager: NSObject {
 
     private let motionManager = CMMotionManager()
     private var audioSession = AVAudioSession.sharedInstance()
+    private struct VolumeTap {
+        let date: Date
+        let isUp: Bool
+    }
     private var lastVolume: Float = 0.5
-    private var volumeTapTimes: [Date] = []
+    private var volumeTaps: [VolumeTap] = []
     private var isObservingVolume = false
     private var floatWindow: UIWindow?
     private var timerTrigger: Timer?
@@ -122,7 +126,7 @@ final class TriggerManager: NSObject {
         guard isObservingVolume else { return }
         audioSession.removeObserver(self, forKeyPath: "outputVolume")
         isObservingVolume = false
-        volumeTapTimes.removeAll()
+        volumeTaps.removeAll()
     }
 
     override func observeValue(
@@ -138,30 +142,33 @@ final class TriggerManager: NSObject {
         // 音量有变化时记录时间
         if abs(newVal - oldVal) > 0.01 {
             let now = Date()
+            let isUp = newVal > oldVal
             
             // 加入长按防误触：如果是长按，系统产生的回调极为密集（间隔小于 0.15 秒）
             // 我们必须将其视为长按调音量的动作，直接丢弃本次触发，甚至可以清空现有积攒的连击！
-            if let lastTap = volumeTapTimes.last, now.timeIntervalSince(lastTap) < 0.15 {
+            if let lastTap = volumeTaps.last, now.timeIntervalSince(lastTap.date) < 0.15 {
                 // 彻底忽略并重置，防止误录制
-                volumeTapTimes.removeAll()
+                volumeTaps.removeAll()
                 return
             }
             
-            volumeTapTimes.append(now)
+            volumeTaps.append(VolumeTap(date: now, isUp: isUp))
 
             // 清理 1.5 秒前的记录（给按键多留一点宽松时间）
-            volumeTapTimes = volumeTapTimes.filter { now.timeIntervalSince($0) < 1.5 }
+            volumeTaps = volumeTaps.filter { now.timeIntervalSince($0.date) < 2.0 } // 容错时间可稍微延长到2秒
 
-            // 检测是否达到连按次数
-            let settings = SettingsManager.shared.settings
-            if volumeTapTimes.count >= settings.volumeKeyTapCount {
-                volumeTapTimes.removeAll()
-                onTrigger?(.volumeKey)
-                
-                // 为了防止按下触发后系统立刻继续反弹，我们强制加一个冷却
-                isObservingVolume = false // 故意停止监听一段瞬间
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                    self?.isObservingVolume = true
+            // 检测是否满足“上 - 下 - 上”组合
+            if volumeTaps.count >= 3 {
+                let last3 = Array(volumeTaps.suffix(3))
+                if last3[0].isUp && !last3[1].isUp && last3[2].isUp {
+                    volumeTaps.removeAll()
+                    onTrigger?(.volumeKey)
+                    
+                    // 为了防止按下触发后系统立刻继续反弹，我们强制加一个冷却
+                    isObservingVolume = false // 故意停止监听一段瞬间
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                        self?.isObservingVolume = true
+                    }
                 }
             }
         }

@@ -267,7 +267,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
         case .trigger:
             switch indexPath.row {
             case 0: return makeToggleCell(title: "摇动手机", isOn: settings.enableShakeTrigger, tag: 100)
-            case 1: return makeToggleCell(title: "音量键快速连按", isOn: settings.enableVolumeKeyTrigger, tag: 101)
+            case 1: return makeToggleCell(title: "音量键上-下-上暗号", isOn: settings.enableVolumeKeyTrigger, tag: 101)
             case 2: return makeToggleCell(title: "悬浮快捷按钮", isOn: settings.enableFloatButton, tag: 102)
             case 3: return makeToggleCell(title: "定时录音", isOn: settings.enableTimerTrigger, tag: 104)
             case 4: return makeDatePickerCell(title: "开始时间", date: settings.timerStartTime, tag: 300)
