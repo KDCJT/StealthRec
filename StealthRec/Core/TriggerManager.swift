@@ -5,6 +5,7 @@ import Foundation
 import AVFoundation
 import CoreMotion
 import UIKit
+import AudioToolbox
 
 // MARK: - 触发管理器
 final class TriggerManager: NSObject {
@@ -23,6 +24,7 @@ final class TriggerManager: NSObject {
     private var lastVolume: Float = 0.5
     private var volumeTaps: [VolumeTap] = []
     private var isObservingVolume = false
+    private var volumePollingTimer: Timer?
     private var floatWindow: UIWindow?
     private var timerTrigger: Timer?
     private var shakeDebounceTimer: Timer?
@@ -86,6 +88,10 @@ final class TriggerManager: NSObject {
             // 减去重力（约1g），检测是否超过阈值
             if magnitude > threshold {
                 self.isShakeCoolingDown = true
+                
+                // 真机震动反馈 (Pop)
+                AudioServicesPlaySystemSound(1520)
+                
                 self.onTrigger?(.shake)
 
                 // 冷却时间防止重复触发
@@ -113,62 +119,64 @@ final class TriggerManager: NSObject {
         } catch {}
 
         lastVolume = audioSession.outputVolume
-        audioSession.addObserver(
-            self,
-            forKeyPath: "outputVolume",
-            options: [.new, .old],
-            context: nil
-        )
         isObservingVolume = true
+        
+        // 使用高频主动轮询，0.1秒一次。直接绕过 iOS 核心对下层混音 App 屏蔽音量 KVO 推送的阴谋。
+        volumePollingTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            self?.pollVolume()
+        }
+        RunLoop.current.add(volumePollingTimer!, forMode: .common)
     }
 
     private func stopVolumeKeyTrigger() {
         guard isObservingVolume else { return }
-        audioSession.removeObserver(self, forKeyPath: "outputVolume")
+        volumePollingTimer?.invalidate()
+        volumePollingTimer = nil
         isObservingVolume = false
         volumeTaps.removeAll()
     }
 
-    override func observeValue(
-        forKeyPath keyPath: String?,
-        of object: Any?,
-        change: [NSKeyValueChangeKey: Any]?,
-        context: UnsafeMutableRawPointer?
-    ) {
-        guard keyPath == "outputVolume",
-              let newVal = change?[.newKey] as? Float,
-              let oldVal = change?[.oldKey] as? Float else { return }
+    private func pollVolume() {
+        guard isObservingVolume else { return }
+        
+        let newVal = audioSession.outputVolume
+        let oldVal = lastVolume
+        
+        // 如果音量没有变化，直接返回
+        if abs(newVal - oldVal) <= 0.01 { return }
+        
+        // 有变化则记录为老音量
+        lastVolume = newVal
+        
+        let now = Date()
+        let isUp = newVal > oldVal
+        
+        // 加入长按防误触：如果是长按，回调极为密集（短于 0.15 秒）
+        if let lastTap = volumeTaps.last, now.timeIntervalSince(lastTap.date) < 0.15 {
+            volumeTaps.removeAll()
+            return
+        }
+        
+        volumeTaps.append(VolumeTap(date: now, isUp: isUp))
 
-        // 音量有变化时记录时间
-        if abs(newVal - oldVal) > 0.01 {
-            let now = Date()
-            let isUp = newVal > oldVal
-            
-            // 加入长按防误触：如果是长按，系统产生的回调极为密集（间隔小于 0.15 秒）
-            // 我们必须将其视为长按调音量的动作，直接丢弃本次触发，甚至可以清空现有积攒的连击！
-            if let lastTap = volumeTaps.last, now.timeIntervalSince(lastTap.date) < 0.15 {
-                // 彻底忽略并重置，防止误录制
+        // 清理 2 秒前的记录
+        volumeTaps = volumeTaps.filter { now.timeIntervalSince($0.date) < 2.0 }
+
+        // 检测是否满足“上 - 下 - 上”组合
+        if volumeTaps.count >= 3 {
+            let last3 = Array(volumeTaps.suffix(3))
+            if last3[0].isUp && !last3[1].isUp && last3[2].isUp {
                 volumeTaps.removeAll()
-                return
-            }
-            
-            volumeTaps.append(VolumeTap(date: now, isUp: isUp))
-
-            // 清理 1.5 秒前的记录（给按键多留一点宽松时间）
-            volumeTaps = volumeTaps.filter { now.timeIntervalSince($0.date) < 2.0 } // 容错时间可稍微延长到2秒
-
-            // 检测是否满足“上 - 下 - 上”组合
-            if volumeTaps.count >= 3 {
-                let last3 = Array(volumeTaps.suffix(3))
-                if last3[0].isUp && !last3[1].isUp && last3[2].isUp {
-                    volumeTaps.removeAll()
-                    onTrigger?(.volumeKey)
-                    
-                    // 为了防止按下触发后系统立刻继续反弹，我们强制加一个冷却
-                    isObservingVolume = false // 故意停止监听一段瞬间
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                        self?.isObservingVolume = true
-                    }
+                
+                // 真机震动反馈 (Pop)
+                AudioServicesPlaySystemSound(1520)
+                
+                onTrigger?(.volumeKey)
+                
+                isObservingVolume = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    self?.lastVolume = self?.audioSession.outputVolume ?? 0.5
+                    self?.isObservingVolume = true
                 }
             }
         }

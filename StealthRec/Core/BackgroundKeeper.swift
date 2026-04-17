@@ -11,8 +11,7 @@ final class BackgroundKeeper {
     
     static let shared = BackgroundKeeper()
     
-    private var engine: AVAudioEngine?
-    private var playerNode: AVAudioPlayerNode?
+    private var audioPlayer: AVAudioPlayer?
     private var isPlaying = false
     
     private init() {
@@ -48,10 +47,8 @@ final class BackgroundKeeper {
     
     func stop() {
         guard isPlaying else { return }
-        engine?.stop()
-        playerNode?.stop()
-        engine = nil
-        playerNode = nil
+        audioPlayer?.stop()
+        audioPlayer = nil
         isPlaying = false
         
         do {
@@ -63,41 +60,36 @@ final class BackgroundKeeper {
     
     // MARK: - 引擎
     
-    private func startSilentEngine() {
-        engine = AVAudioEngine()
-        playerNode = AVAudioPlayerNode()
-        
-        guard let engine = engine, let playerNode = playerNode else { return }
-        
-        engine.attach(playerNode)
-        
-        // 创建一个无声缓冲
-        let format = AVAudioFormat(standardFormatWithSampleRate: 44100, channels: 1)!
-        engine.connect(playerNode, to: engine.mainMixerNode, format: format)
-        
-        do {
-            try engine.start()
-            playSilentBuffer(on: playerNode, format: format)
-        } catch {
-            CrashLogger.log("[BackgroundKeeper] Engine start failed: \(error)")
-        }
+    private func createSilentWAV() -> Data {
+        // A minimal valid 44-byte WAV header + 2 bytes of silence (16-bit PCM, 1 channel, 44.1kHz)
+        let header: [UInt8] = [
+            0x52, 0x49, 0x46, 0x46, // "RIFF"
+            0x26, 0x00, 0x00, 0x00, // ChunkSize (38 bytes)
+            0x57, 0x41, 0x56, 0x45, // "WAVE"
+            0x66, 0x6D, 0x74, 0x20, // "fmt "
+            0x10, 0x00, 0x00, 0x00, // Subchunk1Size (16)
+            0x01, 0x00, 0x01, 0x00, // AudioFormat (1=PCM), NumChannels (1)
+            0x44, 0xAC, 0x00, 0x00, // SampleRate (44100)
+            0x88, 0x58, 0x01, 0x00, // ByteRate (44100 * 1 * 2 = 88200)
+            0x02, 0x00, 0x10, 0x00, // BlockAlign (2), BitsPerSample (16)
+            0x64, 0x61, 0x74, 0x61, // "data"
+            0x02, 0x00, 0x00, 0x00, // Subchunk2Size (2 bytes of data)
+            0x00, 0x00              // The actual silent sample
+        ]
+        return Data(header)
     }
-    
-    private func playSilentBuffer(on player: AVAudioPlayerNode, format: AVAudioFormat) {
-        let frameCapacity = AVAudioFrameCount(format.sampleRate * 0.1) // 0.1 秒
-        guard let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frameCapacity) else { return }
-        buffer.frameLength = frameCapacity
-        
-        // 填充静音
-        if let data = buffer.floatChannelData?[0] {
-            for i in 0..<Int(frameCapacity) {
-                data[i] = 0.0
-            }
+
+    private func startSilentEngine() {
+        do {
+            let data = createSilentWAV()
+            audioPlayer = try AVAudioPlayer(data: data)
+            audioPlayer?.numberOfLoops = -1 // 无限循环播放
+            audioPlayer?.volume = 0.01 // 极小音量防止系统优化
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.play()
+        } catch {
+            CrashLogger.log("[BackgroundKeeper] Failed to start audio player: \(error)")
         }
-        
-        // 无限循环
-        player.scheduleBuffer(buffer, at: nil, options: .loops, completionHandler: nil)
-        player.play()
     }
     
     // MARK: - 打断处理
@@ -115,8 +107,7 @@ final class BackgroundKeeper {
                     // 打断结束，恢复播放
                     do {
                         try AVAudioSession.sharedInstance().setActive(true)
-                        try engine?.start()
-                        playerNode?.play()
+                        audioPlayer?.play()
                     } catch {
                         CrashLogger.log("[BackgroundKeeper] Failed to resume after interruption: \(error)")
                     }
