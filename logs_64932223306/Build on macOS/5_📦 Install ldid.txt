@@ -1,0 +1,14 @@
+﻿2026-04-16T16:08:22.1643380Z ##[group]Run brew install ldid
+2026-04-16T16:08:22.1643810Z [36;1mbrew install ldid[0m
+2026-04-16T16:08:22.1686090Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-16T16:08:22.1686590Z ##[endgroup]
+2026-04-16T16:08:24.0849750Z [32m==>[0m [1mFetching downloads for: [32mldid[39m[0m
+2026-04-16T16:08:24.5147500Z ✔︎ Bottle Manifest ldid (2.1.5_1)
+2026-04-16T16:08:25.1281010Z ✔︎ Bottle Manifest libplist (2.7.0)
+2026-04-16T16:08:25.1796830Z ✔︎ Bottle ldid (2.1.5_1)
+2026-04-16T16:08:25.2728260Z ✔︎ Bottle libplist (2.7.0)
+2026-04-16T16:08:25.3898150Z [32m==>[0m [1mInstalling ldid dependency: [32mlibplist[39m[0m
+2026-04-16T16:08:25.3974640Z [34m==>[0m [1mPouring libplist--2.7.0.arm64_sequoia.bottle.tar.gz[0m
+2026-04-16T16:08:27.1054850Z 🍺  /opt/homebrew/Cellar/libplist/2.7.0: 32 files, 659.6KB
+2026-04-16T16:08:27.1061320Z [34m==>[0m [1mPouring ldid--2.1.5_1.arm64_sequoia.bottle.1.tar.gz[0m
+2026-04-16T16:08:28.4253300Z 🍺  /opt/homebrew/Cellar/ldid/2.1.5_1: 6 files, 292.6KB

@@ -1,0 +1,17 @@
+﻿2026-04-16T16:08:28.5057620Z ##[group]Run xcodegen generate --spec project.yml
+2026-04-16T16:08:28.5058380Z [36;1mxcodegen generate --spec project.yml[0m
+2026-04-16T16:08:28.5058770Z [36;1mecho "=== Generated xcodeproj ==="[0m
+2026-04-16T16:08:28.5059030Z [36;1mls -la StealthRec.xcodeproj/[0m
+2026-04-16T16:08:28.5088690Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-16T16:08:28.5089040Z ##[endgroup]
+2026-04-16T16:08:28.5528800Z ⚙️  Generating plists...
+2026-04-16T16:08:28.5558300Z ⚙️  Generating project...
+2026-04-16T16:08:28.5777880Z ⚙️  Writing project...
+2026-04-16T16:08:28.5862370Z Created project at /Users/runner/work/StealthRec/StealthRec/StealthRec.xcodeproj
+2026-04-16T16:08:28.5863630Z === Generated xcodeproj ===
+2026-04-16T16:08:28.5923740Z total 48
+2026-04-16T16:08:28.5924010Z drwxr-xr-x   5 runner  staff    160 Apr 16 16:08 .
+2026-04-16T16:08:28.5924310Z drwxr-xr-x  12 runner  staff    384 Apr 16 16:08 ..
+2026-04-16T16:08:28.5924740Z -rw-r--r--   1 runner  staff  23845 Apr 16 16:08 project.pbxproj
+2026-04-16T16:08:28.5925340Z drwxr-xr-x   3 runner  staff     96 Apr 16 16:08 project.xcworkspace
+2026-04-16T16:08:28.5925730Z drwxr-xr-x   2 runner  staff     64 Apr 16 16:08 xcshareddata

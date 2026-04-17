@@ -1,0 +1,274 @@
+﻿2026-04-16T16:08:28.5953910Z ##[group]Run # 从 project.yml 读取版本号
+2026-04-16T16:08:28.5954310Z [36;1m# 从 project.yml 读取版本号[0m
+2026-04-16T16:08:28.5955060Z [36;1mMARKETING_VER=$(grep 'MARKETING_VERSION:' project.yml | head -1 | sed 's/.*"\(.*\)".*/\1/')[0m
+2026-04-16T16:08:28.5955630Z [36;1mBUILD_NUM=$(grep 'CURRENT_PROJECT_VERSION:' project.yml | head -1 | sed 's/.*"\(.*\)".*/\1/')[0m
+2026-04-16T16:08:28.5956130Z [36;1mecho ">>> Building GhostRec v${MARKETING_VER} (Build ${BUILD_NUM})"[0m
+2026-04-16T16:08:28.5956450Z [36;1m[0m
+2026-04-16T16:08:28.5956600Z [36;1m# 编译，直接输出日志（不通过 xcpretty 以防掩盖错误）[0m
+2026-04-16T16:08:28.5956830Z [36;1mxcodebuild \[0m
+2026-04-16T16:08:28.5957020Z [36;1m  -project StealthRec.xcodeproj \[0m
+2026-04-16T16:08:28.5957260Z [36;1m  -scheme StealthRec \[0m
+2026-04-16T16:08:28.5957490Z [36;1m  -configuration Release \[0m
+2026-04-16T16:08:28.5957720Z [36;1m  -destination "generic/platform=iOS" \[0m
+2026-04-16T16:08:28.5957980Z [36;1m  -derivedDataPath build \[0m
+2026-04-16T16:08:28.5958180Z [36;1m  CODE_SIGN_IDENTITY="" \[0m
+2026-04-16T16:08:28.5958530Z [36;1m  CODE_SIGNING_REQUIRED=NO \[0m
+2026-04-16T16:08:28.5958770Z [36;1m  CODE_SIGNING_ALLOWED=NO \[0m
+2026-04-16T16:08:28.5958990Z [36;1m  ONLY_ACTIVE_ARCH=NO \[0m
+2026-04-16T16:08:28.5959210Z [36;1m  ARCHS="arm64" \[0m
+2026-04-16T16:08:28.5959390Z [36;1m  VALID_ARCHS="arm64"[0m
+2026-04-16T16:08:28.5959570Z [36;1m[0m
+2026-04-16T16:08:28.5959740Z [36;1m# 验证编译结果[0m
+2026-04-16T16:08:28.5959930Z [36;1mecho "=== Looking for .app bundle ==="[0m
+2026-04-16T16:08:28.5960240Z [36;1mfind build -name "*.app" -type d | grep -v ".dSYM"[0m
+2026-04-16T16:08:28.5960620Z [36;1mAPP_PATH=$(find build -name "*.app" -type d | grep -v ".dSYM" | head -n 1)[0m
+2026-04-16T16:08:28.5961000Z [36;1mif [ -z "$APP_PATH" ]; then[0m
+2026-04-16T16:08:28.5961210Z [36;1m  echo "❌ 找不到 .app 包，编译失败"[0m
+2026-04-16T16:08:28.5961430Z [36;1m  exit 1[0m
+2026-04-16T16:08:28.5961590Z [36;1mfi[0m
+2026-04-16T16:08:28.5961750Z [36;1mecho "✅ 找到 App 包：$APP_PATH"[0m
+2026-04-16T16:08:28.5962020Z [36;1mecho "APP_PATH=$APP_PATH" >> "$GITHUB_ENV"[0m
+2026-04-16T16:08:28.5962270Z [36;1m[0m
+2026-04-16T16:08:28.5962430Z [36;1m# 检查二进制文件大小[0m
+2026-04-16T16:08:28.5962620Z [36;1mBINARY="$APP_PATH/StealthRec"[0m
+2026-04-16T16:08:28.5966530Z [36;1mif [ ! -f "$BINARY" ]; then[0m
+2026-04-16T16:08:28.5967240Z [36;1m  echo "❌ 二进制文件不存在"[0m
+2026-04-16T16:08:28.5967780Z [36;1m  exit 1[0m
+2026-04-16T16:08:28.5968190Z [36;1mfi[0m
+2026-04-16T16:08:28.5968680Z [36;1mecho "✅ 二进制大小: $(du -sh "$BINARY" | cut -f1)"[0m
+2026-04-16T16:08:28.5969340Z [36;1m[0m
+2026-04-16T16:08:28.5969790Z [36;1m# 验证 Info.plist 版本注入[0m
+2026-04-16T16:08:28.5970480Z [36;1mecho "=== Built Info.plist version ==="[0m
+2026-04-16T16:08:28.5971800Z [36;1m/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP_PATH/Info.plist"[0m
+2026-04-16T16:08:28.5972390Z [36;1m/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$APP_PATH/Info.plist"[0m
+2026-04-16T16:08:28.6007720Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-16T16:08:28.6008050Z ##[endgroup]
+2026-04-16T16:08:28.6506030Z >>> Building GhostRec v1.2.0 (Build 10)
+2026-04-16T16:08:29.7774600Z Command line invocation:
+2026-04-16T16:08:29.7778840Z     /Applications/Xcode_16.4.app/Contents/Developer/usr/bin/xcodebuild -project StealthRec.xcodeproj -scheme StealthRec -configuration Release -destination generic/platform=iOS -derivedDataPath build CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=NO ARCHS=arm64 VALID_ARCHS=arm64
+2026-04-16T16:08:29.7782540Z 
+2026-04-16T16:08:29.7782900Z Build settings from command line:
+2026-04-16T16:08:29.7783630Z     ARCHS = arm64
+2026-04-16T16:08:29.7783850Z     CODE_SIGN_IDENTITY = 
+2026-04-16T16:08:29.7784040Z     CODE_SIGNING_ALLOWED = NO
+2026-04-16T16:08:29.7784260Z     CODE_SIGNING_REQUIRED = NO
+2026-04-16T16:08:29.7784460Z     ONLY_ACTIVE_ARCH = NO
+2026-04-16T16:08:29.7784630Z     VALID_ARCHS = arm64
+2026-04-16T16:08:29.7784750Z 
+2026-04-16T16:08:31.5052230Z note: Using codesigning identity override: 
+2026-04-16T16:08:32.0626140Z ComputePackagePrebuildTargetDependencyGraph
+2026-04-16T16:08:32.3318720Z 
+2026-04-16T16:08:32.3340920Z Prepare packages
+2026-04-16T16:08:32.3342810Z 
+2026-04-16T16:08:32.3374660Z CreateBuildRequest
+2026-04-16T16:08:32.3375430Z 
+2026-04-16T16:08:32.3375720Z SendProjectDescription
+2026-04-16T16:08:32.3483530Z 
+2026-04-16T16:08:32.3484100Z CreateBuildOperation
+2026-04-16T16:08:32.3690000Z 
+2026-04-16T16:08:32.3792650Z ComputeTargetDependencyGraph
+2026-04-16T16:08:32.3894070Z note: Building targets in dependency order
+2026-04-16T16:08:32.3897690Z note: Target dependency graph (1 target)
+2026-04-16T16:08:32.3898140Z     Target 'StealthRec' in project 'StealthRec' (no dependencies)
+2026-04-16T16:08:32.3898460Z 
+2026-04-16T16:08:32.3898610Z GatherProvisioningInputs
+2026-04-16T16:08:32.3898830Z 
+2026-04-16T16:08:32.3899030Z CreateBuildDescription
+2026-04-16T16:08:32.4294460Z 
+2026-04-16T16:08:32.4296230Z ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+2026-04-16T16:08:32.8531450Z 
+2026-04-16T16:08:32.8532890Z ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -x c -c /dev/null
+2026-04-16T16:08:33.4158430Z 
+2026-04-16T16:08:33.4333240Z ExecuteExternalTool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+2026-04-16T16:08:33.8133580Z 
+2026-04-16T16:08:33.8359360Z Build description signature: f73bfbff80b09aec870848672580dbde
+2026-04-16T16:08:33.8393790Z Build description path: /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/XCBuildData/f73bfbff80b09aec870848672580dbde.xcbuilddata
+2026-04-16T16:08:33.9100960Z ClangStatCache /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk /Users/runner/work/StealthRec/StealthRec/build/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache
+2026-04-16T16:08:33.9210560Z     cd /Users/runner/work/StealthRec/StealthRec/StealthRec.xcodeproj
+2026-04-16T16:08:33.9343790Z     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -o /Users/runner/work/StealthRec/StealthRec/build/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache
+2026-04-16T16:08:38.2499360Z 
+2026-04-16T16:08:38.2500860Z CreateBuildDirectory /Users/runner/work/StealthRec/StealthRec/build/Build/Products
+2026-04-16T16:08:38.2501650Z     cd /Users/runner/work/StealthRec/StealthRec/StealthRec.xcodeproj
+2026-04-16T16:08:38.2502540Z     builtin-create-build-directory /Users/runner/work/StealthRec/StealthRec/build/Build/Products
+2026-04-16T16:08:38.2503140Z 
+2026-04-16T16:08:38.2503550Z CreateBuildDirectory /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex
+2026-04-16T16:08:38.2504190Z     cd /Users/runner/work/StealthRec/StealthRec/StealthRec.xcodeproj
+2026-04-16T16:08:38.2517330Z     builtin-create-build-directory /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex
+2026-04-16T16:08:38.2517880Z 
+2026-04-16T16:08:38.2518750Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec-f576d557708dfe04a662168190821158-VFS-iphoneos/all-product-headers.yaml
+2026-04-16T16:08:38.2520510Z     cd /Users/runner/work/StealthRec/StealthRec/StealthRec.xcodeproj
+2026-04-16T16:08:38.2521460Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec-f576d557708dfe04a662168190821158-VFS-iphoneos/all-product-headers.yaml
+2026-04-16T16:08:38.2522780Z 
+2026-04-16T16:08:38.2523410Z CreateBuildDirectory /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/EagerLinkingTBDs/Release-iphoneos
+2026-04-16T16:08:38.2524100Z     cd /Users/runner/work/StealthRec/StealthRec/StealthRec.xcodeproj
+2026-04-16T16:08:38.2524770Z     builtin-create-build-directory /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/EagerLinkingTBDs/Release-iphoneos
+2026-04-16T16:08:38.2525310Z 
+2026-04-16T16:08:38.2525560Z CreateBuildDirectory /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos
+2026-04-16T16:08:38.2526420Z     cd /Users/runner/work/StealthRec/StealthRec/StealthRec.xcodeproj
+2026-04-16T16:08:38.2527020Z     builtin-create-build-directory /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos
+2026-04-16T16:08:38.2527440Z 
+2026-04-16T16:08:38.2528030Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.hmap (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2528960Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2529610Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.hmap
+2026-04-16T16:08:38.2530240Z 
+2026-04-16T16:08:38.2531090Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.DependencyStaticMetadataFileList (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2532170Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2532950Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.DependencyStaticMetadataFileList
+2026-04-16T16:08:38.2533680Z 
+2026-04-16T16:08:38.2534400Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.DependencyMetadataFileList (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2535390Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2538170Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.DependencyMetadataFileList
+2026-04-16T16:08:38.2538930Z 
+2026-04-16T16:08:38.2539590Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-project-headers.hmap (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2540550Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2541250Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-project-headers.hmap
+2026-04-16T16:08:38.2541930Z 
+2026-04-16T16:08:38.2542610Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-own-target-headers.hmap (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2543540Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2544310Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-own-target-headers.hmap
+2026-04-16T16:08:38.2544920Z 
+2026-04-16T16:08:38.2545580Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-generated-files.hmap (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2546530Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2547550Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-generated-files.hmap
+2026-04-16T16:08:38.2548490Z 
+2026-04-16T16:08:38.2549350Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-all-target-headers.hmap (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2550640Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2551440Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-all-target-headers.hmap
+2026-04-16T16:08:38.2552040Z 
+2026-04-16T16:08:38.2552840Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-all-non-framework-target-headers.hmap (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2554990Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2555800Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-all-non-framework-target-headers.hmap
+2026-04-16T16:08:38.2556430Z 
+2026-04-16T16:08:38.2557260Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_const_extract_protocols.json (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2558230Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2559070Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_const_extract_protocols.json
+2026-04-16T16:08:38.2559710Z 
+2026-04-16T16:08:38.2560470Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftFileList (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2561430Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2562220Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftFileList
+2026-04-16T16:08:38.2562840Z 
+2026-04-16T16:08:38.2563640Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftConstValuesFileList (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2564620Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2565490Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftConstValuesFileList
+2026-04-16T16:08:38.2566720Z 
+2026-04-16T16:08:38.2567540Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.LinkFileList (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2568540Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2569320Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.LinkFileList
+2026-04-16T16:08:38.2569930Z 
+2026-04-16T16:08:38.2570710Z WriteAuxiliaryFile /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-OutputFileMap.json (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2571990Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2572930Z     write-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-OutputFileMap.json
+2026-04-16T16:08:38.2573560Z 
+2026-04-16T16:08:38.2574010Z MkDir /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2574640Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2575220Z     /bin/mkdir -p /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app
+2026-04-16T16:08:38.2575590Z 
+2026-04-16T16:08:38.2576350Z ProcessInfoPlistFile /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/Info.plist /Users/runner/work/StealthRec/StealthRec/StealthRec/Resources/Info.plist (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2577340Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2579180Z     builtin-infoPlistUtility /Users/runner/work/StealthRec/StealthRec/StealthRec/Resources/Info.plist -producttype com.apple.product-type.application -genpkginfo /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/PkgInfo -expandbuildsettings -format binary -platform iphoneos -requiredArchitecture arm64 -o /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/Info.plist
+2026-04-16T16:08:38.2580640Z 
+2026-04-16T16:08:38.2580990Z SwiftDriver StealthRec normal arm64 com.apple.xcode.tools.swift.compiler (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.2581560Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.2618940Z     builtin-SwiftDriver -- /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name StealthRec -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftFileList -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios15.0 -g -module-cache-path /Users/runner/work/StealthRec/StealthRec/build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -swift-version 5 -I /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F . -c -num-threads 3 -Xcc -ivfsstatcache -Xcc /Users/runner/work/StealthRec/StealthRec/build/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache -output-file-map /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/StealthRec/StealthRec/build/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-generated-files.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-own-target-headers.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-project-headers.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/include -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-Swift.h -working-directory /Users/runner/work/StealthRec/StealthRec -no-emit-module-separately-wmo
+2026-04-16T16:08:38.3875970Z 
+2026-04-16T16:08:38.3921200Z SwiftCompile normal arm64 Compiling\ AppDelegate.swift,\ AuthViewController.swift,\ CrashLogger.swift,\ Extensions.swift,\ LocationManager.swift,\ MainViewController.swift,\ PasswordManager.swift,\ RecordingCell.swift,\ RecordingDetailViewController.swift,\ RecordingEngine.swift,\ RecordingMetadata.swift,\ RecordingStore.swift,\ SceneDelegate.swift,\ SettingsManager.swift,\ SettingsViewController.swift,\ TriggerManager.swift,\ main.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/App/AppDelegate.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/UI/Auth/AuthViewController.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/App/CrashLogger.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/Extensions.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/LocationManager.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/UI/Main/MainViewController.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/PasswordManager.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/UI/Main/RecordingCell.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/UI/Detail/RecordingDetailViewController.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/RecordingEngine.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Models/RecordingMetadata.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/RecordingStore.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/App/SceneDelegate.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/SettingsManager.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/UI/Settings/SettingsViewController.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/TriggerManager.swift /Users/runner/work/StealthRec/StealthRec/StealthRec/App/main.swift (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.4577890Z 
+2026-04-16T16:08:38.4581190Z CompileSwift normal arm64 (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:38.4582750Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:38.4583720Z     
+2026-04-16T16:08:54.7224020Z /Users/runner/work/StealthRec/StealthRec/StealthRec/App/main.swift:37:3: warning: 'catch' block is unreachable because no errors are thrown in 'do' block
+2026-04-16T16:08:54.7326220Z } catch {
+2026-04-16T16:08:54.7427190Z   ^
+2026-04-16T16:08:54.7530170Z /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/LocationManager.swift:31:40: warning: 'authorizationStatus()' was deprecated in iOS 14.0
+2026-04-16T16:08:54.7628920Z         let status = CLLocationManager.authorizationStatus()
+2026-04-16T16:08:54.7734500Z                                        ^
+2026-04-16T16:08:54.7836240Z /Users/runner/work/StealthRec/StealthRec/StealthRec/UI/Detail/RecordingDetailViewController.swift:152:21: warning: 'contentEdgeInsets' was deprecated in iOS 15.0: This property is ignored when using UIButtonConfiguration
+2026-04-16T16:08:54.7938860Z         speedButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 12, bottom: 4, right: 12)
+2026-04-16T16:08:54.8040560Z                     ^
+2026-04-16T16:08:54.8147720Z /Users/runner/work/StealthRec/StealthRec/StealthRec/UI/Detail/RecordingDetailViewController.swift:390:13: warning: 'contentEdgeInsets' was deprecated in iOS 15.0: This property is ignored when using UIButtonConfiguration
+2026-04-16T16:08:54.8251040Z         btn.contentEdgeInsets = UIEdgeInsets(top: 14, left: 20, bottom: 14, right: 20)
+2026-04-16T16:08:54.8365710Z             ^
+2026-04-16T16:08:54.8483570Z /Users/runner/work/StealthRec/StealthRec/StealthRec/Core/RecordingEngine.swift:133:13: warning: variable 'metadata' was never mutated; consider changing to 'let' constant
+2026-04-16T16:08:54.8585680Z         var metadata = RecordingMetadata(
+2026-04-16T16:08:54.8687470Z         ~~~ ^
+2026-04-16T16:08:54.8788820Z         let
+2026-04-16T16:08:54.8889240Z 
+2026-04-16T16:08:54.8996350Z SwiftDriver\ Compilation StealthRec normal arm64 com.apple.xcode.tools.swift.compiler (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:54.9098530Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:54.9215860Z     builtin-Swift-Compilation -- /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name StealthRec -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftFileList -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios15.0 -g -module-cache-path /Users/runner/work/StealthRec/StealthRec/build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -swift-version 5 -I /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F . -c -num-threads 3 -Xcc -ivfsstatcache -Xcc /Users/runner/work/StealthRec/StealthRec/build/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache -output-file-map /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/StealthRec/StealthRec/build/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-generated-files.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-own-target-headers.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-project-headers.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/include -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-Swift.h -working-directory /Users/runner/work/StealthRec/StealthRec -no-emit-module-separately-wmo
+2026-04-16T16:08:54.9319780Z 
+2026-04-16T16:08:54.9422250Z SwiftDriverJobDiscovery normal arm64 Compiling AppDelegate.swift, AuthViewController.swift, CrashLogger.swift, Extensions.swift, LocationManager.swift, MainViewController.swift, PasswordManager.swift, RecordingCell.swift, RecordingDetailViewController.swift, RecordingEngine.swift, RecordingMetadata.swift, RecordingStore.swift, SceneDelegate.swift, SettingsManager.swift, SettingsViewController.swift, TriggerManager.swift, main.swift (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:54.9529870Z 
+2026-04-16T16:08:54.9633630Z SwiftDriver\ Compilation\ Requirements StealthRec normal arm64 com.apple.xcode.tools.swift.compiler (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:54.9747420Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:54.9871730Z     builtin-Swift-Compilation-Requirements -- /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name StealthRec -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftFileList -enable-bare-slash-regex -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -target arm64-apple-ios15.0 -g -module-cache-path /Users/runner/work/StealthRec/StealthRec/build/ModuleCache.noindex -Xfrontend -serialize-debugging-options -swift-version 5 -I /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F . -c -num-threads 3 -Xcc -ivfsstatcache -Xcc /Users/runner/work/StealthRec/StealthRec/build/SDKStatCaches.noindex/iphoneos18.5-22F76-a529daf784b3616c7c04a36aeb7f5c05.sdkstatcache -output-file-map /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/runner/work/StealthRec/StealthRec/build/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_const_extract_protocols.json -Xcc -iquote -Xcc /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-generated-files.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-own-target-headers.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-all-target-headers.hmap -Xcc -iquote -Xcc /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec-project-headers.hmap -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/include -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources-normal/arm64 -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources/arm64 -Xcc -I/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-Swift.h -working-directory /Users/runner/work/StealthRec/StealthRec -no-emit-module-separately-wmo
+2026-04-16T16:08:54.9950490Z 
+2026-04-16T16:08:55.0054080Z SwiftMergeGeneratedHeaders /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources/StealthRec-Swift.h /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-Swift.h (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:55.0167310Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:55.0274070Z     builtin-swiftHeaderTool -arch arm64 /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec-Swift.h -o /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/DerivedSources/StealthRec-Swift.h
+2026-04-16T16:08:55.0388470Z 
+2026-04-16T16:08:55.0499400Z Copy /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/arm64-apple-ios.swiftmodule /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftmodule (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:55.0602860Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:55.0706240Z     builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftmodule /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/arm64-apple-ios.swiftmodule
+2026-04-16T16:08:55.0812880Z 
+2026-04-16T16:08:55.0919050Z Copy /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/arm64-apple-ios.swiftdoc /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftdoc (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:55.1023990Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:55.1144960Z     builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftdoc /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/arm64-apple-ios.swiftdoc
+2026-04-16T16:08:55.1281550Z 
+2026-04-16T16:08:55.1399750Z Copy /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/arm64-apple-ios.abi.json /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.abi.json (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:55.1504580Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:55.1540510Z     builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.abi.json /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/arm64-apple-ios.abi.json
+2026-04-16T16:08:55.1646500Z 
+2026-04-16T16:08:55.1748340Z Copy /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftsourceinfo (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:55.1851750Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:55.1960090Z     builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftsourceinfo /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.swiftmodule/Project/arm64-apple-ios.swiftsourceinfo
+2026-04-16T16:08:55.2061710Z 
+2026-04-16T16:08:55.2239450Z Ld /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec normal (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:55.2343030Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:55.2461220Z     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios15.0 -isysroot /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk -Os -L/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/EagerLinkingTBDs/Release-iphoneos -L/Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F/Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/EagerLinkingTBDs/Release-iphoneos -F/Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos -F. -filelist /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.LinkFileList -Xlinker -rpath -Xlinker @executable_path/Frameworks -dead_strip -Xlinker -object_path_lto -Xlinker /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_lto.o -Xlinker -dependency_info -Xlinker /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.swiftmodule -framework CoreMotion -framework AVFoundation -framework CoreLocation -framework LocalAuthentication -framework MapKit -framework BackgroundTasks -framework CryptoKit -o /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec
+2026-04-16T16:08:55.5686900Z 
+2026-04-16T16:08:55.5810180Z GenerateDSYMFile /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app.dSYM /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:55.5938010Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:55.6042560Z     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec -o /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app.dSYM
+2026-04-16T16:08:56.1218190Z 
+2026-04-16T16:08:56.1231080Z ExtractAppIntentsMetadata (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1290080Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:56.1298420Z     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name StealthRec --sdk-root /Applications/Xcode_16.4.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk --xcode-version 16F6 --platform-family iOS --deployment-target 15.0 --bundle-identifier com.ghostrec.app --output /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app --target-triple arm64-apple-ios15.0 --binary-file /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec --dependency-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec_dependency_info.dat --stringsdata-file /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftFileList --metadata-file-list /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.DependencyMetadataFileList --static-metadata-file-list /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.DependencyStaticMetadataFileList --swift-const-vals-list /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/Objects-normal/arm64/StealthRec.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-04-16T16:08:56.1305880Z 2026-04-16 16:08:56.040 appintentsmetadataprocessor[4134:15096] Starting appintentsmetadataprocessor export
+2026-04-16T16:08:56.1306730Z 2026-04-16 16:08:56.054 appintentsmetadataprocessor[4134:15096] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+2026-04-16T16:08:56.1307380Z 
+2026-04-16T16:08:56.1308060Z CopySwiftLibs /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1309410Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:56.1315870Z     builtin-swiftStdLibTool --copy --verbose --scan-executable /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec --scan-folder /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/Frameworks --scan-folder /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/PlugIns --scan-folder /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/SystemExtensions --scan-folder /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/Extensions --scan-folder /Users/runner/work/StealthRec/StealthRec/CoreMotion.framework --scan-folder /Users/runner/work/StealthRec/StealthRec/AVFoundation.framework --scan-folder /Users/runner/work/StealthRec/StealthRec/CoreLocation.framework --scan-folder /Users/runner/work/StealthRec/StealthRec/LocalAuthentication.framework --scan-folder /Users/runner/work/StealthRec/StealthRec/MapKit.framework --scan-folder /Users/runner/work/StealthRec/StealthRec/BackgroundTasks.framework --scan-folder /Users/runner/work/StealthRec/StealthRec/CryptoKit.framework --platform iphoneos --toolchain /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+2026-04-16T16:08:56.1323650Z Ignoring --strip-bitcode because --sign was not passed
+2026-04-16T16:08:56.1324030Z 
+2026-04-16T16:08:56.1324340Z AppIntentsSSUTraining (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1324820Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:56.1327850Z     /Applications/Xcode_16.4.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/Info.plist --temp-dir-path /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/ssu --bundle-id com.ghostrec.app --product-path /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app --extracted-metadata-path /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app/Metadata.appintents --metadata-file-list /Users/runner/work/StealthRec/StealthRec/build/Build/Intermediates.noindex/StealthRec.build/Release-iphoneos/StealthRec.build/StealthRec.DependencyMetadataFileList --archive-ssu-assets
+2026-04-16T16:08:56.1331380Z 2026-04-16 16:08:56.109 appintentsnltrainingprocessor[4135:15101] Parsing options for appintentsnltrainingprocessor
+2026-04-16T16:08:56.1332210Z 2026-04-16 16:08:56.115 appintentsnltrainingprocessor[4135:15101] No AppShortcuts found - Skipping.
+2026-04-16T16:08:56.1332660Z 
+2026-04-16T16:08:56.1333340Z RegisterExecutionPolicyException /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1334230Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:56.1334980Z     builtin-RegisterExecutionPolicyException /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app
+2026-04-16T16:08:56.1335650Z 
+2026-04-16T16:08:56.1336790Z Validate /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1340280Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:56.1342200Z     builtin-validationUtility /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app -infoplist-subpath Info.plist
+2026-04-16T16:08:56.1345120Z warning: All interface orientations must be supported unless the app requires full screen. (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1347550Z warning: A launch configuration or launch storyboard or xib must be provided unless the app requires full screen. (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1349200Z 
+2026-04-16T16:08:56.1350540Z Touch /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1352300Z     cd /Users/runner/work/StealthRec/StealthRec
+2026-04-16T16:08:56.1353700Z     /usr/bin/touch -c /Users/runner/work/StealthRec/StealthRec/build/Build/Products/Release-iphoneos/StealthRec.app
+2026-04-16T16:08:56.1549050Z 
+2026-04-16T16:08:56.1891630Z note: Disabling previews because SWIFT_VERSION is set and SWIFT_OPTIMIZATION_LEVEL=-O, expected -Onone (in target 'StealthRec' from project 'StealthRec')
+2026-04-16T16:08:56.1957560Z ** BUILD SUCCEEDED **
+2026-04-16T16:08:56.1962500Z 
+2026-04-16T16:08:56.1963030Z === Looking for .app bundle ===
+2026-04-16T16:08:56.2410790Z build/Build/Products/Release-iphoneos/StealthRec.app
+2026-04-16T16:08:56.2629710Z ✅ 找到 App 包：build/Build/Products/Release-iphoneos/StealthRec.app
+2026-04-16T16:08:56.2713970Z ✅ 二进制大小: 660K
+2026-04-16T16:08:56.2718360Z === Built Info.plist version ===
+2026-04-16T16:08:56.2781610Z 1.0
+2026-04-16T16:08:56.2939420Z 1

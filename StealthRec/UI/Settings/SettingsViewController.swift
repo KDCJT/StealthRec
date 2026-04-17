@@ -94,6 +94,25 @@ class SettingsViewController: UIViewController {
         return cell
     }
 
+    private func makeDatePickerCell(title: String, date: Date?, tag: Int) -> UITableViewCell {
+        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+        cell.backgroundColor = UIColor(hex: "#1A1A1E")
+        cell.textLabel?.text = title
+        cell.textLabel?.textColor = .white
+        cell.selectionStyle = .none
+        
+        let picker = UIDatePicker()
+        picker.datePickerMode = .time
+        picker.preferredDatePickerStyle = .inline
+        picker.date = date ?? Date()
+        picker.tintColor = accentRed
+        picker.tag = tag
+        picker.addTarget(self, action: #selector(datePickerChanged(_:)), for: .valueChanged)
+        
+        cell.accessoryView = picker
+        return cell
+    }
+
     // MARK: - Toggle 处理
     @objc private func toggleChanged(_ sender: UISwitch) {
         switch sender.tag {
@@ -105,6 +124,7 @@ class SettingsViewController: UIViewController {
             SettingsManager.shared.update { $0.enableFloatButton = sender.isOn }
         case 104: // 定时触发
             SettingsManager.shared.update { $0.enableTimerTrigger = sender.isOn }
+            tableView.reloadData()
         case 200: // 密码保护
             if sender.isOn {
                 showSetPasswordAlert()
@@ -123,6 +143,16 @@ class SettingsViewController: UIViewController {
         }
 
         // 重启触发器
+        TriggerManager.shared.startAll(settings: SettingsManager.shared.settings)
+    }
+
+    // MARK: - DatePicker 处理
+    @objc private func datePickerChanged(_ sender: UIDatePicker) {
+        if sender.tag == 300 {
+            SettingsManager.shared.update { $0.timerStartTime = sender.date }
+        } else if sender.tag == 301 {
+            SettingsManager.shared.update { $0.timerStopTime = sender.date }
+        }
         TriggerManager.shared.startAll(settings: SettingsManager.shared.settings)
     }
 
@@ -204,7 +234,7 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch Section(rawValue: section)! {
         case .recording: return 2
-        case .trigger:   return 4  // 摇动、音量键、悬浮按钮、定时
+        case .trigger:   return settings.enableTimerTrigger ? 6 : 4  // 摇动、音量键、悬浮按钮、定时 (+2 开始结束时间)
         case .security:  return 2
         case .storage:   return 1
         case .about:     return 1
@@ -240,6 +270,8 @@ extension SettingsViewController: UITableViewDataSource, UITableViewDelegate {
             case 1: return makeToggleCell(title: "音量键快速连按", isOn: settings.enableVolumeKeyTrigger, tag: 101)
             case 2: return makeToggleCell(title: "悬浮快捷按钮", isOn: settings.enableFloatButton, tag: 102)
             case 3: return makeToggleCell(title: "定时录音", isOn: settings.enableTimerTrigger, tag: 104)
+            case 4: return makeDatePickerCell(title: "开始时间", date: settings.timerStartTime, tag: 300)
+            case 5: return makeDatePickerCell(title: "结束时间", date: settings.timerStopTime, tag: 301)
             default: return UITableViewCell()
             }
 

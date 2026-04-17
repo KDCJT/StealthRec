@@ -1,0 +1,26 @@
+﻿2026-04-16T16:08:56.3199230Z ##[group]Run BINARY="build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec"
+2026-04-16T16:08:56.3199830Z [36;1mBINARY="build/Build/Products/Release-iphoneos/StealthRec.app/StealthRec"[0m
+2026-04-16T16:08:56.3200290Z [36;1mENTITLEMENTS="StealthRec/App/StealthRec.entitlements"[0m
+2026-04-16T16:08:56.3200610Z [36;1mecho "=== Entitlements file ==="[0m
+2026-04-16T16:08:56.3200860Z [36;1mcat "$ENTITLEMENTS"[0m
+2026-04-16T16:08:56.3201070Z [36;1mldid -S"$ENTITLEMENTS" "$BINARY"[0m
+2026-04-16T16:08:56.3201270Z [36;1mecho "✅ Entitlements 注入完成"[0m
+2026-04-16T16:08:56.3201540Z [36;1mecho "=== Injected entitlements ==="[0m
+2026-04-16T16:08:56.3201870Z [36;1mldid -e "$BINARY" || true[0m
+2026-04-16T16:08:56.5431220Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-16T16:08:56.5431570Z env:
+2026-04-16T16:08:56.5431840Z   APP_PATH: build/Build/Products/Release-iphoneos/StealthRec.app
+2026-04-16T16:08:56.5432110Z ##[endgroup]
+2026-04-16T16:08:56.6145320Z === Entitlements file ===
+2026-04-16T16:08:56.6204040Z <?xml version="1.0" encoding="UTF-8"?>
+2026-04-16T16:08:56.6209910Z <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+2026-04-16T16:08:56.6211420Z <plist version="1.0">
+2026-04-16T16:08:56.6211860Z <dict/>
+2026-04-16T16:08:56.6212170Z </plist>
+2026-04-16T16:08:56.8644150Z ✅ Entitlements 注入完成
+2026-04-16T16:08:56.8756320Z === Injected entitlements ===
+2026-04-16T16:08:56.8777720Z <?xml version="1.0" encoding="UTF-8"?>
+2026-04-16T16:08:56.8778630Z <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+2026-04-16T16:08:56.8785180Z <plist version="1.0">
+2026-04-16T16:08:56.8785610Z <dict/>
+2026-04-16T16:08:56.8785890Z </plist>

@@ -1,0 +1,74 @@
+﻿2026-04-16T16:08:28.4552920Z ##[group]Run echo "=== project.yml version settings ==="
+2026-04-16T16:08:28.4553320Z [36;1mecho "=== project.yml version settings ==="[0m
+2026-04-16T16:08:28.4553710Z [36;1mgrep -E 'MARKETING_VERSION|CURRENT_PROJECT_VERSION' project.yml[0m
+2026-04-16T16:08:28.4554200Z [36;1mecho "=== Info.plist ==="[0m
+2026-04-16T16:08:28.4554500Z [36;1mcat StealthRec/Resources/Info.plist[0m
+2026-04-16T16:08:28.4590380Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-16T16:08:28.4590740Z ##[endgroup]
+2026-04-16T16:08:28.4891100Z === project.yml version settings ===
+2026-04-16T16:08:28.4934240Z     MARKETING_VERSION: "1.2.0"
+2026-04-16T16:08:28.4934910Z     CURRENT_PROJECT_VERSION: "10"
+2026-04-16T16:08:28.4935410Z         MARKETING_VERSION: "1.2.0"
+2026-04-16T16:08:28.4935840Z         CURRENT_PROJECT_VERSION: "10"
+2026-04-16T16:08:28.4936290Z === Info.plist ===
+2026-04-16T16:08:28.4965020Z <?xml version="1.0" encoding="UTF-8"?>
+2026-04-16T16:08:28.4971720Z <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+2026-04-16T16:08:28.4972730Z <plist version="1.0">
+2026-04-16T16:08:28.4973170Z <dict>
+2026-04-16T16:08:28.4973510Z 	<key>CFBundleDisplayName</key>
+2026-04-16T16:08:28.4973870Z 	<string>GhostRec</string>
+2026-04-16T16:08:28.4974170Z 	<key>CFBundleIdentifier</key>
+2026-04-16T16:08:28.4974520Z 	<string>com.ghostrec.app</string>
+2026-04-16T16:08:28.4976780Z 	<key>CFBundleName</key>
+2026-04-16T16:08:28.4977150Z 	<string>GhostRec</string>
+2026-04-16T16:08:28.4977550Z 	<key>CFBundleVersion</key>
+2026-04-16T16:08:28.4978050Z 	<string>11</string>
+2026-04-16T16:08:28.4979240Z 	<key>CFBundleShortVersionString</key>
+2026-04-16T16:08:28.4979710Z 	<string>1.2.1</string>
+2026-04-16T16:08:28.4991930Z 	<key>CFBundlePackageType</key>
+2026-04-16T16:08:28.4992130Z 	<string>APPL</string>
+2026-04-16T16:08:28.4992380Z 	<key>CFBundleExecutable</key>
+2026-04-16T16:08:28.4992630Z 	<string>$(EXECUTABLE_NAME)</string>
+2026-04-16T16:08:28.4992920Z 	<key>CFBundleInfoDictionaryVersion</key>
+2026-04-16T16:08:28.4993300Z 	<string>6.0</string>
+2026-04-16T16:08:28.4993550Z 	<key>MinimumOSVersion</key>
+2026-04-16T16:08:28.4993780Z 	<string>15.0</string>
+2026-04-16T16:08:28.4993990Z 	<key>LSRequiresIPhoneOS</key>
+2026-04-16T16:08:28.4994260Z 	<true/>
+2026-04-16T16:08:28.4994440Z 	<key>UISupportedInterfaceOrientations</key>
+2026-04-16T16:08:28.4994660Z 	<array>
+2026-04-16T16:08:28.4994870Z 		<string>UIInterfaceOrientationPortrait</string>
+2026-04-16T16:08:28.4995100Z 	</array>
+2026-04-16T16:08:28.4995300Z 	<key>UIBackgroundModes</key>
+2026-04-16T16:08:28.4995480Z 	<array>
+2026-04-16T16:08:28.4995660Z 		<string>audio</string>
+2026-04-16T16:08:28.4995830Z 		<string>location</string>
+2026-04-16T16:08:28.4996050Z 		<string>fetch</string>
+2026-04-16T16:08:28.4996290Z 		<string>processing</string>
+2026-04-16T16:08:28.4996530Z 	</array>
+2026-04-16T16:08:28.4996750Z 	<key>BGTaskSchedulerPermittedIdentifiers</key>
+2026-04-16T16:08:28.4997020Z 	<array>
+2026-04-16T16:08:28.4997280Z 		<string>com.ghostrec.refresh</string>
+2026-04-16T16:08:28.4997530Z 	</array>
+2026-04-16T16:08:28.4997730Z 	<key>NSMicrophoneUsageDescription</key>
+2026-04-16T16:08:28.4998840Z 	<string>需要麦克风权限以进行录音</string>
+2026-04-16T16:08:28.4999190Z 	<key>NSLocationWhenInUseUsageDescription</key>
+2026-04-16T16:08:28.4999750Z 	<string>需要位置权限以记录录音地点</string>
+2026-04-16T16:08:28.5000130Z 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+2026-04-16T16:08:28.5002080Z 	<string>需要位置权限以在后台记录录音地点</string>
+2026-04-16T16:08:28.5003580Z 	<key>NSLocationAlwaysUsageDescription</key>
+2026-04-16T16:08:28.5005290Z 	<string>需要始终允许位置权限以在后台记录录音地点</string>
+2026-04-16T16:08:28.5007080Z 	<key>NSFaceIDUsageDescription</key>
+2026-04-16T16:08:28.5008720Z 	<string>使用 Face ID 快速解锁录音管理界面</string>
+2026-04-16T16:08:28.5008980Z 	<key>UIStatusBarStyle</key>
+2026-04-16T16:08:28.5009200Z 	<string>UIStatusBarStyleLightContent</string>
+2026-04-16T16:08:28.5009530Z 	<key>UIViewControllerBasedStatusBarAppearance</key>
+2026-04-16T16:08:28.5010100Z 	<true/>
+2026-04-16T16:08:28.5010720Z 	<key>UIFileSharingEnabled</key>
+2026-04-16T16:08:28.5010910Z 	<true/>
+2026-04-16T16:08:28.5011070Z 	<key>LSSupportsOpeningDocumentsInPlace</key>
+2026-04-16T16:08:28.5013210Z 	<true/>
+2026-04-16T16:08:28.5013340Z 	<key>UILaunchScreen</key>
+2026-04-16T16:08:28.5013540Z 	<dict/>
+2026-04-16T16:08:28.5013780Z </dict>
+2026-04-16T16:08:28.5013940Z </plist>

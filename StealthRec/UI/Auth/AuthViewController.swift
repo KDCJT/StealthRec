@@ -229,8 +229,8 @@ class AuthViewController: UIViewController {
         view.addSubview(forgotButton)
 
         NSLayoutConstraint.activate([
-            forgotButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            forgotButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+            forgotButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            forgotButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16)
         ])
     }
 

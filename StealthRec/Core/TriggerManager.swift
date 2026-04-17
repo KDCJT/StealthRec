@@ -45,6 +45,13 @@ final class TriggerManager: NSObject {
         if settings.enableTimerTrigger, let start = settings.timerStartTime {
             scheduleTimerTrigger(at: start, stop: settings.timerStopTime)
         }
+        
+        let needsBackground = settings.enableShakeTrigger || settings.enableVolumeKeyTrigger
+        if needsBackground {
+            BackgroundKeeper.shared.start()
+        } else {
+            BackgroundKeeper.shared.stop()
+        }
     }
 
     func stopAll() {
@@ -52,6 +59,7 @@ final class TriggerManager: NSObject {
         stopVolumeKeyTrigger()
         stopFloatButton()
         stopTimerTrigger()
+        BackgroundKeeper.shared.stop()
     }
 
     // MARK: ─────────────────────────────────────────

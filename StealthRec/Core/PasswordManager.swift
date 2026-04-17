@@ -11,18 +11,19 @@ final class PasswordManager {
 
     private let defaults = UserDefaults.standard
     private let hashKey = "StealthRec.PasswordHash"
-    private let enabledKey = "StealthRec.PasswordEnabled"
-    private let biometricKey = "StealthRec.BiometricEnabled"
+
+    // 强引用 LAContext，防止被自动释放导致 Face/Touch ID 的弹窗被悄悄取消
+    private var authContext: LAContext?
 
     private init() {}
 
     // MARK: - 状态查询
     var isPasswordEnabled: Bool {
-        return defaults.bool(forKey: enabledKey)
+        return SettingsManager.shared.settings.passwordEnabled
     }
 
     var isBiometricEnabled: Bool {
-        return defaults.bool(forKey: biometricKey)
+        return SettingsManager.shared.settings.useBiometrics
     }
 
     var biometricType: LABiometryType {
@@ -46,16 +47,16 @@ final class PasswordManager {
     func setPassword(_ pin: String) {
         let hash = hashPassword(pin)
         defaults.set(hash, forKey: hashKey)
-        defaults.set(true, forKey: enabledKey)
+        SettingsManager.shared.update { $0.passwordEnabled = true }
     }
 
     func removePassword() {
         defaults.removeObject(forKey: hashKey)
-        defaults.set(false, forKey: enabledKey)
+        SettingsManager.shared.update { $0.passwordEnabled = false }
     }
 
     func setBiometricEnabled(_ enabled: Bool) {
-        defaults.set(enabled, forKey: biometricKey)
+        SettingsManager.shared.update { $0.useBiometrics = enabled }
     }
 
     // MARK: - 验证 PIN 密码
@@ -66,10 +67,10 @@ final class PasswordManager {
 
     // MARK: - 生物识别验证
     func authenticateWithBiometrics(reason: String = "验证身份以访问录音", completion: @escaping (Bool, Error?) -> Void) {
-        let context = LAContext()
+        authContext = LAContext()
         var error: NSError?
 
-        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+        guard let context = authContext, context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
             completion(false, error)
             return
         }
@@ -77,9 +78,10 @@ final class PasswordManager {
         context.evaluatePolicy(
             .deviceOwnerAuthenticationWithBiometrics,
             localizedReason: reason
-        ) { success, authError in
+        ) { [weak self] success, authError in
             DispatchQueue.main.async {
                 completion(success, authError)
+                self?.authContext = nil
             }
         }
     }

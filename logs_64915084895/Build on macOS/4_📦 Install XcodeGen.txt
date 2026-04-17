@@ -1,0 +1,11 @@
+﻿2026-04-16T14:24:06.5869120Z ##[group]Run brew install xcodegen
+2026-04-16T14:24:06.5869420Z [36;1mbrew install xcodegen[0m
+2026-04-16T14:24:06.5869620Z [36;1mxcodegen --version[0m
+2026-04-16T14:24:06.5913500Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-16T14:24:06.5913820Z ##[endgroup]
+2026-04-16T14:24:09.6470770Z [32m==>[0m [1mFetching downloads for: [32mxcodegen[39m[0m
+2026-04-16T14:24:10.2378900Z ✔︎ Bottle Manifest xcodegen (2.45.3)
+2026-04-16T14:24:11.8107070Z ✔︎ Bottle xcodegen (2.45.3)
+2026-04-16T14:24:12.0077950Z [34m==>[0m [1mPouring xcodegen--2.45.3.arm64_sequoia.bottle.tar.gz[0m
+2026-04-16T14:24:13.4077280Z 🍺  /opt/homebrew/Cellar/xcodegen/2.45.3: 38 files, 7.4MB
+2026-04-16T14:24:13.4475140Z Version: 2.45.3

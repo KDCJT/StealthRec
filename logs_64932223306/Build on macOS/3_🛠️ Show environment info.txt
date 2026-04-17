@@ -1,0 +1,12 @@
+﻿2026-04-16T16:08:11.4108980Z ##[group]Run xcodebuild -version
+2026-04-16T16:08:11.4109940Z [36;1mxcodebuild -version[0m
+2026-04-16T16:08:11.4110670Z [36;1mswift --version[0m
+2026-04-16T16:08:11.4111370Z [36;1mecho "Branch: $GITHUB_REF_NAME"[0m
+2026-04-16T16:08:11.4167000Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-16T16:08:11.4168190Z ##[endgroup]
+2026-04-16T16:08:12.7483320Z Xcode 16.4
+2026-04-16T16:08:12.7484400Z Build version 16F6
+2026-04-16T16:08:15.2576470Z Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+2026-04-16T16:08:15.2577780Z Target: arm64-apple-macosx15.0
+2026-04-16T16:08:15.2641550Z Branch: master
+2026-04-16T16:08:15.2643760Z swift-driver version: 1.120.5 
