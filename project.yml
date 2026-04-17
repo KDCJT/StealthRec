@@ -37,8 +37,6 @@ settings:
     
     # 强制禁用 Xcode 自动生成 Info.plist，使用我们自定义的 Plist
     GENERATE_INFOPLIST_FILE: NO
-    MARKETING_VERSION: "1.2.0"
-    CURRENT_PROJECT_VERSION: "10"
   configs:
     Debug:
       SWIFT_OPTIMIZATION_LEVEL: "-Onone"
@@ -56,14 +54,6 @@ targets:
         excludes:
           - "**/*.md"
           - "**/*.sh"
-    
-    # Info.plist 位置
-    info:
-      path: StealthRec/Resources/Info.plist
-    
-    # Entitlements
-    entitlements:
-      path: StealthRec/App/StealthRec.entitlements
     
     # 系统框架依赖
     dependencies:
@@ -85,7 +75,7 @@ targets:
     settings:
       base:
         INFOPLIST_FILE: StealthRec/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: StealthRec/App/StealthRec.entitlements
         PRODUCT_NAME: StealthRec
-        GENERATE_INFOPLIST_FILE: NO
-        MARKETING_VERSION: "1.2.0"
-        CURRENT_PROJECT_VERSION: "10"
+        MARKETING_VERSION: "1.2.2"
+        CURRENT_PROJECT_VERSION: "12"

@@ -4,25 +4,35 @@
 import UIKit
 import Foundation
 
-// 在沙盒Documents目录下创建BOOT_DEBUG.log
-let docsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first ?? "/tmp"
-let logPath = docsPath + "/BOOT_DEBUG.log"
+// 获取可写的路径，TrollStore App 有完全的 NSHomeDirectory 权限
+let docsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first ?? NSTemporaryDirectory()
+let homePath = NSHomeDirectory()
+let logPaths = [
+    docsPath + "/BOOT_DEBUG.log",
+    homePath + "/BOOT_DEBUG.log"
+]
 
 func logToBoot(_ msg: String) {
     let line = "[\(Date())] \(msg)\n"
-    if let fd = try? FileHandle(forWritingTo: URL(fileURLWithPath: logPath)) {
-        fd.seekToEndOfFile()
-        if let data = line.data(using: .utf8) {
-            fd.write(data)
+    for path in logPaths {
+        if let fd = try? FileHandle(forWritingTo: URL(fileURLWithPath: path)) {
+            fd.seekToEndOfFile()
+            if let data = line.data(using: .utf8) {
+                fd.write(data)
+            }
+            fd.closeFile()
+        } else {
+            try? line.write(toFile: path, atomically: true, encoding: .utf8)
         }
-        fd.closeFile()
-    } else {
-        try? line.write(toFile: logPath, atomically: true, encoding: .utf8)
     }
 }
 
+// 拦截所有标准错误输出到日志文件
+freopen(logPaths[0].cString(using: .utf8), "a", stderr)
+freopen(logPaths[0].cString(using: .utf8), "a", stdout)
+
 // 第一条日志
-logToBoot("--- APP BOOTSTRAPPING (main.swift) ---")
+logToBoot("=== GHOSTREC APP BOOTSTRAPPING (1.2.2) ===")
 
 do {
     logToBoot("STEP 1: Registering AppDelegate...")
