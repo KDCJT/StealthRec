@@ -137,19 +137,32 @@ final class TriggerManager: NSObject {
 
         // 音量有变化时记录时间
         if abs(newVal - oldVal) > 0.01 {
-            volumeTapTimes.append(Date())
-
-            // 记录当前时间
             let now = Date()
             
-            // 清理 1 秒前的记录
-            volumeTapTimes = volumeTapTimes.filter { now.timeIntervalSince($0) < 1.0 }
+            // 加入长按防误触：如果是长按，系统产生的回调极为密集（间隔小于 0.15 秒）
+            // 我们必须将其视为长按调音量的动作，直接丢弃本次触发，甚至可以清空现有积攒的连击！
+            if let lastTap = volumeTapTimes.last, now.timeIntervalSince(lastTap) < 0.15 {
+                // 彻底忽略并重置，防止误录制
+                volumeTapTimes.removeAll()
+                return
+            }
+            
+            volumeTapTimes.append(now)
+
+            // 清理 1.5 秒前的记录（给按键多留一点宽松时间）
+            volumeTapTimes = volumeTapTimes.filter { now.timeIntervalSince($0) < 1.5 }
 
             // 检测是否达到连按次数
             let settings = SettingsManager.shared.settings
             if volumeTapTimes.count >= settings.volumeKeyTapCount {
                 volumeTapTimes.removeAll()
                 onTrigger?(.volumeKey)
+                
+                // 为了防止按下触发后系统立刻继续反弹，我们强制加一个冷却
+                isObservingVolume = false // 故意停止监听一段瞬间
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    self?.isObservingVolume = true
+                }
             }
         }
     }
